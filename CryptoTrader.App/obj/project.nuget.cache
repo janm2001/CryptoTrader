@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "ihVOQeGkU/E=",
+  "dgSpecHash": "Ws9cvnLfaio=",
   "success": true,
   "projectFilePath": "/Users/janm2001/Desktop/CryptoTrader/CryptoTrader.App/CryptoTrader.App.csproj",
   "expectedPackageFiles": [
@@ -8,6 +8,7 @@
     "/Users/janm2001/.nuget/packages/avalonia.angle.windows.natives/2.1.25547.20250602/avalonia.angle.windows.natives.2.1.25547.20250602.nupkg.sha512",
     "/Users/janm2001/.nuget/packages/avalonia.buildservices/11.3.2/avalonia.buildservices.11.3.2.nupkg.sha512",
     "/Users/janm2001/.nuget/packages/avalonia.controls.colorpicker/11.3.9/avalonia.controls.colorpicker.11.3.9.nupkg.sha512",
+    "/Users/janm2001/.nuget/packages/avalonia.controls.datagrid/11.3.9/avalonia.controls.datagrid.11.3.9.nupkg.sha512",
     "/Users/janm2001/.nuget/packages/avalonia.desktop/11.3.9/avalonia.desktop.11.3.9.nupkg.sha512",
     "/Users/janm2001/.nuget/packages/avalonia.diagnostics/11.3.9/avalonia.diagnostics.11.3.9.nupkg.sha512",
     "/Users/janm2001/.nuget/packages/avalonia.fonts.inter/11.3.9/avalonia.fonts.inter.11.3.9.nupkg.sha512",

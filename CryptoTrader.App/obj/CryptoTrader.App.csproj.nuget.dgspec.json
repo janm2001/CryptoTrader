@@ -53,13 +53,15 @@
               "target": "Package",
               "version": "[11.3.9, )"
             },
+            "Avalonia.Controls.DataGrid": {
+              "target": "Package",
+              "version": "[11.3.9, )"
+            },
             "Avalonia.Desktop": {
               "target": "Package",
               "version": "[11.3.9, )"
             },
             "Avalonia.Diagnostics": {
-              "include": "None",
-              "suppressParent": "All",
               "target": "Package",
               "version": "[11.3.9, )"
             },

@@ -74,3 +74,5 @@
 /Users/janm2001/Desktop/CryptoTrader/CryptoTrader.App/obj/Debug/net9.0/CryptoTr.2D215CBD.Up2Date
 /Users/janm2001/Desktop/CryptoTrader/CryptoTrader.App/obj/Debug/net9.0/CryptoTrader.App.genruntimeconfig.cache
 /Users/janm2001/Desktop/CryptoTrader/CryptoTrader.App/obj/Debug/net9.0/ref/CryptoTrader.App.dll
+/Users/janm2001/Desktop/CryptoTrader/CryptoTrader.App/obj/Debug/net9.0/CryptoTrader.App.sourcelink.json
+/Users/janm2001/Desktop/CryptoTrader/CryptoTrader.App/bin/Debug/net9.0/Avalonia.Controls.DataGrid.dll

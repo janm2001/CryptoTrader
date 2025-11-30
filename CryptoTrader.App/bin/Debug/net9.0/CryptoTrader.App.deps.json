@@ -9,6 +9,7 @@
       "CryptoTrader.App/1.0.0": {
         "dependencies": {
           "Avalonia": "11.3.9",
+          "Avalonia.Controls.DataGrid": "11.3.9",
           "Avalonia.Desktop": "11.3.9",
           "Avalonia.Diagnostics": "11.3.9",
           "Avalonia.Fonts.Inter": "11.3.9",
@@ -100,6 +101,17 @@
         },
         "runtime": {
           "lib/net8.0/Avalonia.Controls.ColorPicker.dll": {
+            "assemblyVersion": "11.3.9.0",
+            "fileVersion": "11.3.9.0"
+          }
+        }
+      },
+      "Avalonia.Controls.DataGrid/11.3.9": {
+        "dependencies": {
+          "Avalonia": "11.3.9"
+        },
+        "runtime": {
+          "lib/net8.0/Avalonia.Controls.DataGrid.dll": {
             "assemblyVersion": "11.3.9.0",
             "fileVersion": "11.3.9.0"
           }
@@ -493,6 +505,13 @@
       "sha512": "sha512-AVn/h8R/jhlHLIImECZnCTpcrcRo319J7y2gJ/YU4ELMaCsRTmWY3dxlRyBDbyCukURTupGmsPy6gb7XEYbWow==",
       "path": "avalonia.controls.colorpicker/11.3.9",
       "hashPath": "avalonia.controls.colorpicker.11.3.9.nupkg.sha512"
+    },
+    "Avalonia.Controls.DataGrid/11.3.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-+3UjzwngTW9s9QXhMemC3dAFB8Y/wM28g2WbE7C/lxUPson+XUN5d4ot5d7lW5RVD0toWyk5tORr1uo7a/lxPQ==",
+      "path": "avalonia.controls.datagrid/11.3.9",
+      "hashPath": "avalonia.controls.datagrid.11.3.9.nupkg.sha512"
     },
     "Avalonia.Desktop/11.3.9": {
       "type": "package",

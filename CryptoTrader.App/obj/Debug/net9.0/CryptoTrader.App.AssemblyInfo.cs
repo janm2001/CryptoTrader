@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CryptoTrader.App")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b738294ea5135adf12b0cdb4cea3d2391910aeba")]
 [assembly: System.Reflection.AssemblyProductAttribute("CryptoTrader.App")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CryptoTrader.App")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
