@@ -1,0 +1,106 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CryptoTrader.App.ViewModels"
+        xmlns:views="using:CryptoTrader.App.Views"
+        x:Class="CryptoTrader.App.Views.MainAppWindow"
+        x:DataType="vm:MainAppViewModel"
+        Title="CryptoTrader"
+        Width="1280" Height="720"
+        MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="#1a1a2e">
+
+    <Window.Styles>
+        <Style Selector="Button.nav">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="20,15"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.nav:pointerover">
+            <Setter Property="Background" Value="#2d2d4a"/>
+        </Style>
+        <Style Selector="Button.nav.active">
+            <Setter Property="Background" Value="#3d3d5a"/>
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Navigation Panel -->
+        <Border Grid.Column="0" Background="#16162a">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="20">
+                    <TextBlock Text="₿ CryptoTrader" 
+                               FontSize="22" 
+                               FontWeight="Bold"
+                               Foreground="#6c5ce7"/>
+                    <TextBlock Text="{Binding CurrentUsername}" 
+                               FontSize="12" 
+                               Foreground="#808090"
+                               Margin="0,5,0,0"/>
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Top" Margin="0,10,0,0">
+                    <Button Classes="nav" x:Name="NavDashboard" Click="NavigateToDashboard">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📊" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock Text="Dashboard" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="nav" x:Name="NavPortfolio" Click="NavigateToPortfolio">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="💼" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock Text="Portfolio" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="nav" x:Name="NavMarket" Click="NavigateToMarket">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📈" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock Text="Market" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="nav" x:Name="NavTransactions" Click="NavigateToTransactions">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📋" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock Text="Transactions" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="nav" x:Name="NavSettings" Click="NavigateToSettings">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⚙️" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock Text="Settings" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="nav" x:Name="NavAdmin" Click="NavigateToAdmin" IsVisible="{Binding IsAdmin}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🔐" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock Text="Admin" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <Button Classes="nav" DockPanel.Dock="Bottom" Click="OnLogout" Margin="0,0,0,20">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🚪" FontSize="18" Margin="0,0,10,0"/>
+                        <TextBlock Text="Logout" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Border/>
+            </DockPanel>
+        </Border>
+
+        <!-- Content Area -->
+        <Border Grid.Column="1" Background="#1a1a2e">
+            <ContentControl x:Name="ContentArea"/>
+        </Border>
+    </Grid>
+</Window>

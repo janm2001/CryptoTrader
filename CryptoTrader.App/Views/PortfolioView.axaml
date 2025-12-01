@@ -1,0 +1,133 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:CryptoTrader.App.ViewModels"
+             x:Class="CryptoTrader.App.Views.PortfolioView"
+             x:DataType="vm:PortfolioViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#4a4a6a"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button:pointerover">
+            <Setter Property="Background" Value="#5a5a8a"/>
+        </Style>
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#6c5ce7"/>
+        </Style>
+        <Style Selector="Button.primary:pointerover">
+            <Setter Property="Background" Value="#7c6cf7"/>
+        </Style>
+        <Style Selector="Button.success">
+            <Setter Property="Background" Value="#00b894"/>
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#2d2d4a"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#4a4a6a"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="CornerRadius" Value="5"/>
+        </Style>
+        <Style Selector="DataGrid">
+            <Setter Property="Background" Value="#1e1e3a"/>
+            <Setter Property="BorderBrush" Value="#3a3a5a"/>
+        </Style>
+        <Style Selector="DataGridColumnHeader">
+            <Setter Property="Background" Value="#2d2d4a"/>
+            <Setter Property="Foreground" Value="#a0a0c0"/>
+            <Setter Property="Padding" Value="10"/>
+        </Style>
+        <Style Selector="DataGridCell">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="10"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <Border Background="#80000000" IsVisible="{Binding IsLoading}" ZIndex="100">
+            <TextBlock Text="Loading..." FontSize="18" Foreground="White"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+
+        <Border Background="#ff6b6b" Padding="10" IsVisible="{Binding HasStatusMessage}"
+                VerticalAlignment="Top" ZIndex="50" Margin="20,10" CornerRadius="5">
+            <TextBlock Text="{Binding StatusMessage}" Foreground="White" HorizontalAlignment="Center"/>
+        </Border>
+
+        <ScrollViewer Padding="30">
+            <StackPanel>
+                <Grid Margin="0,0,0,20">
+                    <TextBlock Text="My Holdings" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <Button Classes="primary" Content="Add Holding" HorizontalAlignment="Right" Click="OnShowAddHolding"/>
+                </Grid>
+
+                <WrapPanel Margin="0,0,0,20">
+                    <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Margin="0,0,15,0" Width="250">
+                        <StackPanel>
+                            <TextBlock Text="Total Value" Foreground="#808090" FontSize="12"/>
+                            <TextBlock Text="{Binding TotalPortfolioValueFormatted}" FontSize="24" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Width="250">
+                        <StackPanel>
+                            <TextBlock Text="Profit/Loss" Foreground="#808090" FontSize="12"/>
+                            <TextBlock Text="{Binding TotalProfitLossFormatted}" FontSize="24" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Border>
+                </WrapPanel>
+
+                <!-- Add Holding Form -->
+                <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Margin="0,0,0,20" IsVisible="{Binding ShowAddHoldingForm}">
+                    <StackPanel>
+                        <TextBlock Text="Add New Holding" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                        <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto">
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="Coin ID" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewHoldingCoinId}" Watermark="bitcoin"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                <TextBlock Text="Symbol" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewHoldingSymbol}" Watermark="BTC"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                                <TextBlock Text="Amount" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewHoldingAmount}" Watermark="0.5"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="3">
+                                <TextBlock Text="Purchase Price" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewHoldingPurchasePrice}" Watermark="50000"/>
+                            </StackPanel>
+                        </Grid>
+                        <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
+                            <Button Classes="success" Content="Save" Click="OnAddHolding" Margin="0,0,10,0"/>
+                            <Button Content="Cancel" Click="OnCancelAddHolding"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#16162a" CornerRadius="10" Padding="5">
+                    <DataGrid ItemsSource="{Binding Holdings}" AutoGenerateColumns="False" IsReadOnly="True" MinHeight="300">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Coin" Binding="{Binding CoinId}" Width="120"/>
+                            <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="80"/>
+                            <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=\{0:N4\}}" Width="100"/>
+                            <DataGridTextColumn Header="Purchase Price" Binding="{Binding PurchasePrice, StringFormat=\{0:C2\}}" Width="120"/>
+                            <DataGridTextColumn Header="Date" Binding="{Binding PurchaseDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="120"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
+                <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                    <Button Classes="primary" Content="Refresh" Click="OnRefresh" Margin="0,0,10,0"/>
+                    <Button Classes="success" Content="Export Holdings" Click="OnExport"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -1,0 +1,122 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:CryptoTrader.App.ViewModels"
+             x:Class="CryptoTrader.App.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <ScrollViewer>
+        <StackPanel Margin="20" Spacing="20">
+            <!-- Language Settings -->
+            <Border Background="#2D2D2D" CornerRadius="10" Padding="20">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="{Binding L[Language]}" FontWeight="Bold" FontSize="16" Foreground="#E0E0E0"/>
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <RadioButton GroupName="Language" Content="English"
+                                     IsChecked="{Binding IsEnglishSelected, Mode=TwoWay}"/>
+                        <RadioButton GroupName="Language" Content="Hrvatski"
+                                     IsChecked="{Binding IsCroatianSelected, Mode=TwoWay}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Theme Settings -->
+            <Border Background="#2D2D2D" CornerRadius="10" Padding="20">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="{Binding L[Theme]}" FontWeight="Bold" FontSize="16" Foreground="#E0E0E0"/>
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <RadioButton GroupName="Theme" Content="{Binding L[DarkTheme]}"
+                                     IsChecked="{Binding IsDarkTheme, Mode=TwoWay}"/>
+                        <RadioButton GroupName="Theme" Content="{Binding L[LightTheme]}"
+                                     IsChecked="{Binding IsLightTheme, Mode=TwoWay}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Currency Settings -->
+            <Border Background="#2D2D2D" CornerRadius="10" Padding="20">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="{Binding L[Currency]}" FontWeight="Bold" FontSize="16" Foreground="#E0E0E0"/>
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <RadioButton GroupName="Currency" Content="USD ($)"
+                                     IsChecked="{Binding IsUsdCurrency, Mode=TwoWay}"/>
+                        <RadioButton GroupName="Currency" Content="EUR (€)"
+                                     IsChecked="{Binding IsEurCurrency, Mode=TwoWay}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Server Settings -->
+            <Border Background="#2D2D2D" CornerRadius="10" Padding="20">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="{Binding L[ServerSettings]}" FontWeight="Bold" FontSize="16" Foreground="#E0E0E0"/>
+                    <Grid ColumnDefinitions="150,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding L[ServerAddress]}"
+                                   VerticalAlignment="Center" Foreground="#B0B0B0"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding ServerAddress, Mode=TwoWay}"
+                                 MaxWidth="300" HorizontalAlignment="Left"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding L[ServerPort]}"
+                                   VerticalAlignment="Center" Foreground="#B0B0B0"/>
+                        <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding ServerPort, Mode=TwoWay}"
+                                       Minimum="1" Maximum="65535" MaxWidth="150" HorizontalAlignment="Left"/>
+
+                        <CheckBox Grid.Row="2" Grid.Column="1" Content="{Binding L[AutoConnect]}"
+                                  IsChecked="{Binding AutoConnect, Mode=TwoWay}"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Notification Settings -->
+            <Border Background="#2D2D2D" CornerRadius="10" Padding="20">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="{Binding L[Notifications]}" FontWeight="Bold" FontSize="16" Foreground="#E0E0E0"/>
+                    <CheckBox Content="{Binding L[PriceAlerts]}"
+                              IsChecked="{Binding PriceAlertsEnabled, Mode=TwoWay}"/>
+                    <CheckBox Content="{Binding L[SoundEnabled]}"
+                              IsChecked="{Binding SoundEnabled, Mode=TwoWay}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Status Message -->
+            <TextBlock Text="{Binding StatusMessage}"
+                       IsVisible="{Binding HasStatusMessage}"
+                       FontSize="14"
+                       HorizontalAlignment="Center">
+                <TextBlock.Styles>
+                    <Style Selector="TextBlock">
+                        <Setter Property="Foreground" Value="#FF6B6B"/>
+                    </Style>
+                    <Style Selector="TextBlock[Tag=success]">
+                        <Setter Property="Foreground" Value="#4ECB71"/>
+                    </Style>
+                </TextBlock.Styles>
+            </TextBlock>
+
+            <!-- Buttons -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15">
+                <Button Content="{Binding L[SaveSettings]}"
+                        Background="#5B8DEE"
+                        Foreground="White"
+                        Padding="30,12"
+                        CornerRadius="5"
+                        Name="SaveButton"
+                        Click="OnSaveClick"
+                        IsEnabled="{Binding !IsLoading}"/>
+
+                <Button Content="{Binding L[ResetDefaults]}"
+                        Background="#6B6B6B"
+                        Foreground="White"
+                        Padding="30,12"
+                        CornerRadius="5"
+                        Name="ResetButton"
+                        Click="OnResetClick"
+                        IsEnabled="{Binding !IsLoading}"/>
+            </StackPanel>
+
+            <!-- Loading indicator -->
+            <StackPanel IsVisible="{Binding IsLoading}" HorizontalAlignment="Center">
+                <TextBlock Text="..." FontSize="20" Foreground="#5B8DEE"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

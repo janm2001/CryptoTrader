@@ -1,0 +1,124 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CryptoTrader.App.ViewModels"
+        x:Class="CryptoTrader.App.Views.LoginWindow"
+        x:DataType="vm:LoginViewModel"
+        Title="CryptoTrader - Login"
+        Width="450" Height="550"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        Background="#1a1a2e">
+
+    <Window.Styles>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#4a4a6a"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button:pointerover">
+            <Setter Property="Background" Value="#5a5a8a"/>
+        </Style>
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#6c5ce7"/>
+        </Style>
+        <Style Selector="Button.primary:pointerover">
+            <Setter Property="Background" Value="#7c6cf7"/>
+        </Style>
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Foreground" Value="#6c5ce7"/>
+        </Style>
+        <Style Selector="Button.link:pointerover">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#8c7cf7"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#2d2d4a"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#4a4a6a"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="CornerRadius" Value="5"/>
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid>
+        <!-- Loading Overlay -->
+        <Border Background="#80000000" IsVisible="{Binding IsLoading}" ZIndex="100">
+            <TextBlock Text="Loading..." FontSize="18" Foreground="White"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+
+        <!-- Main Content -->
+        <Border Background="#16162a" CornerRadius="0" Padding="40" VerticalAlignment="Center">
+            <StackPanel>
+                <TextBlock Text="₿ CryptoTrader" FontSize="32" FontWeight="Bold"
+                           Foreground="#6c5ce7" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                <TextBlock Text="Cryptocurrency Portfolio Tracker" FontSize="12" Foreground="#808090"
+                           HorizontalAlignment="Center" Margin="0,0,0,30"/>
+
+                <!-- Status Message -->
+                <Border Background="#ff6b6b" CornerRadius="5" Padding="10" Margin="0,0,0,15"
+                        IsVisible="{Binding HasStatusMessage}">
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="White" HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- Login Form -->
+                <StackPanel IsVisible="{Binding ShowLoginForm}" Spacing="5">
+                    <TextBlock Text="Welcome Back" FontSize="22" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                    
+                    <TextBlock Text="Username" Margin="0,0,0,5" FontSize="13"/>
+                    <TextBox Text="{Binding LoginUsername}" Watermark="Enter username" Margin="0,0,0,15"/>
+                    
+                    <TextBlock Text="Password" Margin="0,0,0,5" FontSize="13"/>
+                    <TextBox Text="{Binding LoginPassword}" PasswordChar="•" Watermark="Enter password" Margin="0,0,0,15"/>
+                    
+                    <CheckBox Content="Remember me" IsChecked="{Binding LoginRememberMe}" Margin="0,0,0,20"/>
+                    
+                    <Button Classes="primary" Content="Login" HorizontalAlignment="Stretch"
+                            Click="OnLogin" Height="45" FontSize="15"/>
+                    
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                        <TextBlock Text="Don't have an account?" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <Button Classes="link" Content="Register" Click="ShowRegister"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Register Form -->
+                <StackPanel IsVisible="{Binding ShowRegisterForm}" Spacing="5">
+                    <TextBlock Text="Create Account" FontSize="22" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                    
+                    <TextBlock Text="Username" Margin="0,0,0,5" FontSize="13"/>
+                    <TextBox Text="{Binding RegisterUsername}" Watermark="Choose username" Margin="0,0,0,10"/>
+                    
+                    <TextBlock Text="Email" Margin="0,0,0,5" FontSize="13"/>
+                    <TextBox Text="{Binding RegisterEmail}" Watermark="email@example.com" Margin="0,0,0,10"/>
+                    
+                    <TextBlock Text="Password" Margin="0,0,0,5" FontSize="13"/>
+                    <TextBox Text="{Binding RegisterPassword}" PasswordChar="•" Watermark="Min 6 characters" Margin="0,0,0,10"/>
+                    
+                    <TextBlock Text="Confirm Password" Margin="0,0,0,5" FontSize="13"/>
+                    <TextBox Text="{Binding RegisterConfirmPassword}" PasswordChar="•" Watermark="Confirm password" Margin="0,0,0,20"/>
+                    
+                    <Button Classes="primary" Content="Register" HorizontalAlignment="Stretch"
+                            Click="OnRegister" Height="45" FontSize="15"/>
+                    
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                        <TextBlock Text="Already have an account?" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <Button Classes="link" Content="Login" Click="ShowLogin"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

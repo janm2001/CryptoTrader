@@ -1,0 +1,131 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:CryptoTrader.App.ViewModels"
+             x:Class="CryptoTrader.App.Views.TransactionsView"
+             x:DataType="vm:TransactionsViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="#4a4a6a"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button:pointerover">
+            <Setter Property="Background" Value="#5a5a8a"/>
+        </Style>
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#6c5ce7"/>
+        </Style>
+        <Style Selector="Button.primary:pointerover">
+            <Setter Property="Background" Value="#7c6cf7"/>
+        </Style>
+        <Style Selector="Button.success">
+            <Setter Property="Background" Value="#00b894"/>
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#2d2d4a"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#4a4a6a"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="CornerRadius" Value="5"/>
+        </Style>
+        <Style Selector="RadioButton">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="DataGrid">
+            <Setter Property="Background" Value="#1e1e3a"/>
+            <Setter Property="BorderBrush" Value="#3a3a5a"/>
+        </Style>
+        <Style Selector="DataGridColumnHeader">
+            <Setter Property="Background" Value="#2d2d4a"/>
+            <Setter Property="Foreground" Value="#a0a0c0"/>
+            <Setter Property="Padding" Value="10"/>
+        </Style>
+        <Style Selector="DataGridCell">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="10"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <Border Background="#80000000" IsVisible="{Binding IsLoading}" ZIndex="100">
+            <TextBlock Text="Loading..." FontSize="18" Foreground="White"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+
+        <Border Background="#ff6b6b" Padding="10" IsVisible="{Binding HasStatusMessage}"
+                VerticalAlignment="Top" ZIndex="50" Margin="20,10" CornerRadius="5">
+            <TextBlock Text="{Binding StatusMessage}" Foreground="White" HorizontalAlignment="Center"/>
+        </Border>
+
+        <ScrollViewer Padding="30">
+            <StackPanel>
+                <Grid Margin="0,0,0,20">
+                    <TextBlock Text="Transaction History" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <Button Classes="primary" Content="Add Transaction" HorizontalAlignment="Right" Click="OnShowAddTransaction"/>
+                </Grid>
+
+                <!-- Add Transaction Form -->
+                <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Margin="0,0,0,20" IsVisible="{Binding ShowAddTransactionForm}">
+                    <StackPanel>
+                        <TextBlock Text="Add Transaction" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                            <RadioButton Content="Buy" IsChecked="{Binding NewTransactionIsBuy}" GroupName="TxType" Margin="0,0,20,0"/>
+                            <RadioButton Content="Sell" GroupName="TxType"/>
+                        </StackPanel>
+                        <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto">
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="Coin ID" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewTransactionCoinId}" Watermark="bitcoin"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                <TextBlock Text="Amount" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewTransactionAmount}" Watermark="0.5"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                                <TextBlock Text="Price Per Unit" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewTransactionPricePerUnit}" Watermark="50000"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="3">
+                                <TextBlock Text="Fee" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewTransactionFee}" Watermark="0"/>
+                            </StackPanel>
+                        </Grid>
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Text="Notes (optional)" FontSize="12" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding NewTransactionNotes}" Watermark="Notes..."/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
+                            <Button Classes="success" Content="Save" Click="OnAddTransaction" Margin="0,0,10,0"/>
+                            <Button Content="Cancel" Click="OnCancelAddTransaction"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#16162a" CornerRadius="10" Padding="5">
+                    <DataGrid ItemsSource="{Binding Transactions}" AutoGenerateColumns="False" IsReadOnly="True" MinHeight="400">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Date" Binding="{Binding Timestamp, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" Width="140"/>
+                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="70"/>
+                            <DataGridTextColumn Header="Coin" Binding="{Binding CoinId}" Width="100"/>
+                            <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=\{0:N4\}}" Width="100"/>
+                            <DataGridTextColumn Header="Price" Binding="{Binding PricePerUnit, StringFormat=\{0:C2\}}" Width="100"/>
+                            <DataGridTextColumn Header="Total" Binding="{Binding TotalValue, StringFormat=\{0:C2\}}" Width="120"/>
+                            <DataGridTextColumn Header="Fee" Binding="{Binding Fee, StringFormat=\{0:C2\}}" Width="80"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
+                <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                    <Button Classes="primary" Content="Refresh" Click="OnRefresh" Margin="0,0,10,0"/>
+                    <Button Classes="success" Content="Export Transactions" Click="OnExport"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
