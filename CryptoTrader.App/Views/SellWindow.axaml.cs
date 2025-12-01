@@ -13,13 +13,18 @@ public class HoldingOption
 {
     public CryptoHolding Holding { get; set; } = null!;
     public decimal CurrentPrice { get; set; }
-    public override string ToString() => $"{Holding.Symbol.ToUpper()} - {Holding.Amount:N8} (${Holding.Amount * CurrentPrice:N2})";
+    public override string ToString() 
+    {
+        var currency = CurrencyService.Instance;
+        return $"{Holding.Symbol.ToUpper()} - {Holding.Amount:N8} ({currency.Format(Holding.Amount * CurrentPrice)})";
+    }
 }
 
 public partial class SellWindow : Window
 {
     private readonly ApiClient _api;
     private readonly LanguageService _lang;
+    private readonly CurrencyService _currency;
     private decimal _balance;
     private List<HoldingOption> _holdingOptions = new();
     private HoldingOption? _selectedHolding;
@@ -33,6 +38,7 @@ public partial class SellWindow : Window
         InitializeComponent();
         _api = new ApiClient();
         _lang = LanguageService.Instance;
+        _currency = CurrencyService.Instance;
         
         // Use shared auth token
         var token = NavigationService.Instance.AuthToken;
@@ -61,7 +67,7 @@ public partial class SellWindow : Window
         {
             // Load balance
             _balance = await _api.GetBalanceAsync();
-            BalanceText.Text = $"${_balance:N2}";
+            BalanceText.Text = _currency.Format(_balance);
 
             // Load holdings
             var holdings = await _api.GetHoldingsAsync();
@@ -93,7 +99,7 @@ public partial class SellWindow : Window
         {
             _selectedHolding = option;
             OwnedText.Text = $"{option.Holding.Amount:N8} {option.Holding.Symbol.ToUpper()}";
-            CurrentPriceText.Text = $"${option.CurrentPrice:N2}";
+            CurrentPriceText.Text = _currency.Format(option.CurrentPrice);
             HoldingPanel.IsVisible = true;
             UpdateTotalValue();
         }
@@ -125,7 +131,7 @@ public partial class SellWindow : Window
         if (_selectedHolding == null || _amount <= 0)
         {
             SellingText.Text = "0";
-            ReceiveText.Text = "$0.00";
+            ReceiveText.Text = _currency.Format(0);
             SellButton.IsEnabled = false;
             StatusText.Text = "";
             return;
@@ -133,7 +139,7 @@ public partial class SellWindow : Window
 
         var totalValue = _amount * _selectedHolding.CurrentPrice;
         SellingText.Text = $"{_amount:N8} {_selectedHolding.Holding.Symbol.ToUpper()}";
-        ReceiveText.Text = $"${totalValue:N2}";
+        ReceiveText.Text = _currency.Format(totalValue);
 
         if (_amount > _selectedHolding.Holding.Amount)
         {

@@ -6,12 +6,14 @@ namespace CryptoTrader.App.ViewModels;
 public class SettingsViewModel : ViewModelBase
 {
     private readonly LanguageService _lang;
+    private readonly CurrencyService _currency;
     private readonly SettingsService _settings;
     private readonly ApiClient _api;
 
     public SettingsViewModel()
     {
         _lang = LanguageService.Instance;
+        _currency = CurrencyService.Instance;
         _settings = SettingsService.Instance;
         _api = new ApiClient();
 
@@ -173,6 +175,7 @@ public class SettingsViewModel : ViewModelBase
         });
 
         _lang.CurrentLanguage = SelectedLanguage;
+        _currency.CurrentCurrency = SelectedCurrency;
         _api.UpdateBaseAddress();
 
         IsLoading = false;
@@ -192,6 +195,7 @@ public class SettingsViewModel : ViewModelBase
 
         LoadSettings();
         _lang.CurrentLanguage = SelectedLanguage;
+        _currency.CurrentCurrency = SelectedCurrency;
 
         IsLoading = false;
         IsSuccess = true;

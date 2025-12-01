@@ -12,11 +12,13 @@ public class PortfolioViewModel : ViewModelBase
 {
     private readonly ApiClient _api;
     private readonly LanguageService _lang;
+    private readonly CurrencyService _currency;
 
     public PortfolioViewModel()
     {
         _api = new ApiClient();
         _lang = LanguageService.Instance;
+        _currency = CurrencyService.Instance;
         Holdings = new ObservableCollection<CryptoHolding>();
 
         // Use shared auth token
@@ -27,11 +29,13 @@ public class PortfolioViewModel : ViewModelBase
         }
 
         _lang.LanguageChanged += (s, e) => OnPropertyChanged(nameof(L));
+        _currency.CurrencyChanged += (s, e) => RefreshFormattedValues();
 
         _ = LoadDataAsync();
     }
 
     public LanguageService L => _lang;
+    public CurrencyService Currency => _currency;
     public ObservableCollection<CryptoHolding> Holdings { get; }
 
     private decimal _balance;
@@ -40,7 +44,7 @@ public class PortfolioViewModel : ViewModelBase
         get => _balance;
         set { SetProperty(ref _balance, value); OnPropertyChanged(nameof(BalanceFormatted)); OnPropertyChanged(nameof(TotalAssetsFormatted)); }
     }
-    public string BalanceFormatted => $"${Balance:N2}";
+    public string BalanceFormatted => _currency.Format(Balance);
 
     private decimal _totalPortfolioValue;
     public decimal TotalPortfolioValue
@@ -48,7 +52,7 @@ public class PortfolioViewModel : ViewModelBase
         get => _totalPortfolioValue;
         set { SetProperty(ref _totalPortfolioValue, value); OnPropertyChanged(nameof(TotalPortfolioValueFormatted)); OnPropertyChanged(nameof(TotalAssetsFormatted)); }
     }
-    public string TotalPortfolioValueFormatted => $"${TotalPortfolioValue:N2}";
+    public string TotalPortfolioValueFormatted => _currency.Format(TotalPortfolioValue);
 
     private decimal _totalProfitLoss;
     public decimal TotalProfitLoss
@@ -56,12 +60,12 @@ public class PortfolioViewModel : ViewModelBase
         get => _totalProfitLoss;
         set { SetProperty(ref _totalProfitLoss, value); OnPropertyChanged(nameof(TotalProfitLossFormatted)); OnPropertyChanged(nameof(ProfitLossColor)); }
     }
-    public string TotalProfitLossFormatted => $"{(TotalProfitLoss >= 0 ? "+" : "")}{TotalProfitLoss:N2}";
+    public string TotalProfitLossFormatted => _currency.FormatProfitLoss(TotalProfitLoss);
     public IBrush ProfitLossColor => TotalProfitLoss >= 0 
         ? new SolidColorBrush(Color.Parse("#4ECB71")) 
         : new SolidColorBrush(Color.Parse("#FF6B6B"));
 
-    public string TotalAssetsFormatted => $"${(Balance + TotalPortfolioValue):N2}";
+    public string TotalAssetsFormatted => _currency.Format(Balance + TotalPortfolioValue);
 
     private bool _isLoading;
     public bool IsLoading
@@ -106,6 +110,14 @@ public class PortfolioViewModel : ViewModelBase
         }
 
         IsLoading = false;
+    }
+
+    private void RefreshFormattedValues()
+    {
+        OnPropertyChanged(nameof(BalanceFormatted));
+        OnPropertyChanged(nameof(TotalPortfolioValueFormatted));
+        OnPropertyChanged(nameof(TotalProfitLossFormatted));
+        OnPropertyChanged(nameof(TotalAssetsFormatted));
     }
 
     public async Task ExportHoldingsAsync()

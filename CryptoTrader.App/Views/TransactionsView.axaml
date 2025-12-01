@@ -4,6 +4,10 @@
              x:Class="CryptoTrader.App.Views.TransactionsView"
              x:DataType="vm:TransactionsViewModel">
 
+    <UserControl.Resources>
+        <vm:CurrencyConverter x:Key="CurrencyConverter"/>
+    </UserControl.Resources>
+
     <UserControl.Styles>
         <Style Selector="Button">
             <Setter Property="Background" Value="#4a4a6a"/>
@@ -77,9 +81,9 @@
                             <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[TransactionType]}" Binding="{Binding Type}" Width="70"/>
                             <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[Coin]}" Binding="{Binding CoinId}" Width="100"/>
                             <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[Amount]}" Binding="{Binding Amount, StringFormat=\{0:N4\}}" Width="100"/>
-                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[Price]}" Binding="{Binding PricePerUnit, StringFormat=\{0:C2\}}" Width="100"/>
-                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[TotalValue]}" Binding="{Binding TotalValue, StringFormat=\{0:C2\}}" Width="120"/>
-                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[Fee]}" Binding="{Binding Fee, StringFormat=\{0:C2\}}" Width="80"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[Price]}" Binding="{Binding PricePerUnit, Converter={StaticResource CurrencyConverter}}" Width="100"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[TotalValue]}" Binding="{Binding TotalValue, Converter={StaticResource CurrencyConverter}}" Width="120"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[Fee]}" Binding="{Binding Fee, Converter={StaticResource CurrencyConverter}}" Width="80"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>

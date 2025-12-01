@@ -102,37 +102,37 @@
                     <Button Classes="nav" Click="NavigateToDashboard">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="📊" FontSize="18" Margin="0,0,10,0"/>
-                            <TextBlock Text="Dashboard" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding L[Dashboard]}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Classes="nav" Click="NavigateToPortfolio">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="💼" FontSize="18" Margin="0,0,10,0"/>
-                            <TextBlock Text="Portfolio" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding L[Portfolio]}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Classes="nav" Click="NavigateToMarket">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="📈" FontSize="18" Margin="0,0,10,0"/>
-                            <TextBlock Text="Market" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding L[Market]}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Classes="nav" Click="NavigateToTransactions">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="📋" FontSize="18" Margin="0,0,10,0"/>
-                            <TextBlock Text="Transactions" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding L[Transactions]}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Classes="nav" Click="NavigateToSettings">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⚙️" FontSize="18" Margin="0,0,10,0"/>
-                            <TextBlock Text="Settings" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding L[Settings]}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Classes="nav" Click="NavigateToAdmin" IsVisible="{Binding IsAdmin}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="🔐" FontSize="18" Margin="0,0,10,0"/>
-                            <TextBlock Text="Admin" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding L[Admin]}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>

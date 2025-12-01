@@ -12,11 +12,13 @@ public class DashboardViewModel : ViewModelBase
 {
     private readonly ApiClient _api;
     private readonly LanguageService _lang;
+    private readonly CurrencyService _currency;
 
     public DashboardViewModel()
     {
         _api = new ApiClient();
         _lang = LanguageService.Instance;
+        _currency = CurrencyService.Instance;
         CryptoPrices = new ObservableCollection<CryptoCurrency>();
 
         // Use shared auth token
@@ -27,12 +29,14 @@ public class DashboardViewModel : ViewModelBase
         }
 
         _lang.LanguageChanged += (s, e) => OnPropertyChanged(nameof(L));
+        _currency.CurrencyChanged += (s, e) => RefreshFormattedValues();
 
         // Load data when created
         _ = LoadDataAsync();
     }
 
     public LanguageService L => _lang;
+    public CurrencyService Currency => _currency;
     public ObservableCollection<CryptoCurrency> CryptoPrices { get; }
 
     private decimal _totalPortfolioValue;
@@ -41,7 +45,7 @@ public class DashboardViewModel : ViewModelBase
         get => _totalPortfolioValue;
         set { SetProperty(ref _totalPortfolioValue, value); OnPropertyChanged(nameof(TotalPortfolioValueFormatted)); }
     }
-    public string TotalPortfolioValueFormatted => $"${TotalPortfolioValue:N2}";
+    public string TotalPortfolioValueFormatted => _currency.Format(TotalPortfolioValue);
 
     private decimal _totalProfitLoss;
     public decimal TotalProfitLoss
@@ -49,7 +53,7 @@ public class DashboardViewModel : ViewModelBase
         get => _totalProfitLoss;
         set { SetProperty(ref _totalProfitLoss, value); OnPropertyChanged(nameof(TotalProfitLossFormatted)); OnPropertyChanged(nameof(IsProfitPositive)); }
     }
-    public string TotalProfitLossFormatted => $"{(TotalProfitLoss >= 0 ? "+" : "")}{TotalProfitLoss:N2}";
+    public string TotalProfitLossFormatted => _currency.FormatProfitLoss(TotalProfitLoss);
     public bool IsProfitPositive => TotalProfitLoss >= 0;
 
     private decimal _totalProfitLossPercentage;
@@ -132,6 +136,12 @@ public class DashboardViewModel : ViewModelBase
         }
 
         IsLoading = false;
+    }
+
+    private void RefreshFormattedValues()
+    {
+        OnPropertyChanged(nameof(TotalPortfolioValueFormatted));
+        OnPropertyChanged(nameof(TotalProfitLossFormatted));
     }
 
     private async Task SaveExportFileAsync(byte[] data, string baseName, string extension)

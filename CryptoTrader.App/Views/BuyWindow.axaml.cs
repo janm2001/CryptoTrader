@@ -13,6 +13,7 @@ public partial class BuyWindow : Window
 {
     private readonly ApiClient _api;
     private readonly LanguageService _lang;
+    private readonly CurrencyService _currency;
     private decimal _balance;
     private List<CryptoCurrency> _cryptos = new();
     private CryptoCurrency? _selectedCrypto;
@@ -26,6 +27,7 @@ public partial class BuyWindow : Window
         InitializeComponent();
         _api = new ApiClient();
         _lang = LanguageService.Instance;
+        _currency = CurrencyService.Instance;
         
         // Use shared auth token
         var token = NavigationService.Instance.AuthToken;
@@ -54,7 +56,7 @@ public partial class BuyWindow : Window
         {
             // Load balance
             _balance = await _api.GetBalanceAsync();
-            BalanceText.Text = $"${_balance:N2}";
+            BalanceText.Text = _currency.Format(_balance);
 
             // Load top cryptos
             _cryptos = await _api.GetTopCryptosAsync(20);
@@ -82,7 +84,7 @@ public partial class BuyWindow : Window
             _selectedCrypto = _cryptos.FirstOrDefault(c => c.CoinId == option.CoinId);
             if (_selectedCrypto != null)
             {
-                CurrentPriceText.Text = $"${_selectedCrypto.CurrentPrice:N2}";
+                CurrentPriceText.Text = _currency.Format(_selectedCrypto.CurrentPrice);
                 PricePanel.IsVisible = true;
                 UpdateTotalCost();
             }
@@ -106,7 +108,7 @@ public partial class BuyWindow : Window
     {
         if (_selectedCrypto == null || _amount <= 0)
         {
-            TotalCostText.Text = "$0.00";
+            TotalCostText.Text = _currency.Format(0);
             ReceiveText.Text = "0";
             BuyButton.IsEnabled = false;
             StatusText.Text = "";
@@ -114,7 +116,7 @@ public partial class BuyWindow : Window
         }
 
         var totalCost = _amount * _selectedCrypto.CurrentPrice;
-        TotalCostText.Text = $"${totalCost:N2}";
+        TotalCostText.Text = _currency.Format(totalCost);
         ReceiveText.Text = $"{_amount:N8} {_selectedCrypto.Symbol.ToUpper()}";
 
         if (totalCost > _balance)

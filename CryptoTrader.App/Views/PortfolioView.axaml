@@ -4,6 +4,10 @@
              x:Class="CryptoTrader.App.Views.PortfolioView"
              x:DataType="vm:PortfolioViewModel">
 
+    <UserControl.Resources>
+        <vm:CurrencyConverter x:Key="CurrencyConverter"/>
+    </UserControl.Resources>
+
     <UserControl.Styles>
         <Style Selector="Button">
             <Setter Property="Background" Value="#4a4a6a"/>
@@ -110,7 +114,7 @@
                             <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:PortfolioViewModel)DataContext).L[Coin]}" Binding="{Binding CoinId}" Width="120"/>
                             <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:PortfolioViewModel)DataContext).L[Symbol]}" Binding="{Binding Symbol}" Width="80"/>
                             <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:PortfolioViewModel)DataContext).L[Amount]}" Binding="{Binding Amount, StringFormat=\{0:N6\}}" Width="120"/>
-                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:PortfolioViewModel)DataContext).L[PurchasePrice]}" Binding="{Binding PurchasePrice, StringFormat=$\{0:N2\}}" Width="130"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:PortfolioViewModel)DataContext).L[PurchasePrice]}" Binding="{Binding PurchasePrice, Converter={StaticResource CurrencyConverter}}" Width="130"/>
                             <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:PortfolioViewModel)DataContext).L[Date]}" Binding="{Binding PurchaseDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="120"/>
                         </DataGrid.Columns>
                     </DataGrid>
