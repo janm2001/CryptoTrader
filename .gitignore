@@ -1,0 +1,61 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache/options directory
+.vs/
+.vscode/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+
+# SQLite database files (local dev data)
+*.db
+*.db-shm
+*.db-wal
+
+# Windows files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+*.idea/
+
+# Build artifacts
+*.dll
+*.exe
+*.pdb
+*.cache
+
+# Publish output
+publish/
+
+# Test Results
+[Tt]est[Rr]esult*/
+*.trx
+
+# Code coverage
+*.coverage
+*.coveragexml
+
+# NCrunch
+*.ncrunch*
+_NCrunch_*
