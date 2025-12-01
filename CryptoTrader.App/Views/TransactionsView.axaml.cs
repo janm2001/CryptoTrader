@@ -14,9 +14,6 @@ public partial class TransactionsView : UserControl
         DataContext = new TransactionsViewModel();
     }
 
-    private void OnShowAddTransaction(object? sender, RoutedEventArgs e) => ViewModel.ShowAddTransactionForm = true;
-    private async void OnAddTransaction(object? sender, RoutedEventArgs e) => await ViewModel.AddTransactionAsync();
-    private void OnCancelAddTransaction(object? sender, RoutedEventArgs e) => ViewModel.ShowAddTransactionForm = false;
     private async void OnRefresh(object? sender, RoutedEventArgs e) => await ViewModel.LoadDataAsync();
     private async void OnExport(object? sender, RoutedEventArgs e) => await ViewModel.ExportTransactionsAsync();
 }

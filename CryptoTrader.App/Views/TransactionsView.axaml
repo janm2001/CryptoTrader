@@ -67,45 +67,8 @@
             <StackPanel>
                 <Grid Margin="0,0,0,20">
                     <TextBlock Text="{Binding L[TransactionHistory]}" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
-                    <Button Classes="primary" Content="{Binding L[AddTransaction]}" HorizontalAlignment="Right" Click="OnShowAddTransaction"/>
                 </Grid>
 
-                <!-- Add Transaction Form -->
-                <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Margin="0,0,0,20" IsVisible="{Binding ShowAddTransactionForm}">
-                    <StackPanel>
-                        <TextBlock Text="{Binding L[AddTransaction]}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                            <RadioButton Content="{Binding L[Buy]}" IsChecked="{Binding NewTransactionIsBuy}" GroupName="TxType" Margin="0,0,20,0"/>
-                            <RadioButton Content="{Binding L[Sell]}" GroupName="TxType"/>
-                        </StackPanel>
-                        <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto">
-                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                <TextBlock Text="{Binding L[Coin]}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding NewTransactionCoinId}" Watermark="bitcoin"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Margin="0,0,10,0">
-                                <TextBlock Text="{Binding L[Amount]}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding NewTransactionAmount}" Watermark="0.5"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="2" Margin="0,0,10,0">
-                                <TextBlock Text="{Binding L[PricePerUnit]}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding NewTransactionPricePerUnit}" Watermark="50000"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="3">
-                                <TextBlock Text="{Binding L[Fee]}" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding NewTransactionFee}" Watermark="0"/>
-                            </StackPanel>
-                        </Grid>
-                        <StackPanel Margin="0,10,0,0">
-                            <TextBlock Text="{Binding L[Notes]}" FontSize="12" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding NewTransactionNotes}" Watermark="Notes..."/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
-                            <Button Classes="success" Content="{Binding L[Save]}" Click="OnAddTransaction" Margin="0,0,10,0"/>
-                            <Button Content="{Binding L[Cancel]}" Click="OnCancelAddTransaction"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
 
                 <Border Background="#16162a" CornerRadius="10" Padding="5">
                     <DataGrid ItemsSource="{Binding Transactions}" AutoGenerateColumns="False" IsReadOnly="True" MinHeight="400">
