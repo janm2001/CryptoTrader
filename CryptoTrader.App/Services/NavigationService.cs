@@ -16,6 +16,7 @@ public class NavigationService
 
     public string CurrentUsername { get; set; } = "";
     public bool IsAdmin { get; set; }
+    public string? AuthToken { get; set; }
 
     public void NavigateTo(string viewName)
     {
@@ -26,12 +27,14 @@ public class NavigationService
     {
         CurrentUsername = "";
         IsAdmin = false;
+        AuthToken = null;
         LogoutRequested?.Invoke(this, EventArgs.Empty);
     }
 
-    public void SetUserInfo(string username, bool isAdmin)
+    public void SetUserInfo(string username, bool isAdmin, string? token = null)
     {
         CurrentUsername = username;
         IsAdmin = isAdmin;
+        AuthToken = token;
     }
 }

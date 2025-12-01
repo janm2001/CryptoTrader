@@ -24,6 +24,9 @@
         <Style Selector="Button.success">
             <Setter Property="Background" Value="#00b894"/>
         </Style>
+        <Style Selector="Button.danger">
+            <Setter Property="Background" Value="#FF6B6B"/>
+        </Style>
         <Style Selector="TextBlock">
             <Setter Property="Foreground" Value="White"/>
         </Style>
@@ -63,61 +66,51 @@
         <ScrollViewer Padding="30">
             <StackPanel>
                 <Grid Margin="0,0,0,20">
-                    <TextBlock Text="My Holdings" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
-                    <Button Classes="primary" Content="Add Holding" HorizontalAlignment="Right" Click="OnShowAddHolding"/>
+                    <TextBlock Text="My Portfolio" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                        <Button Classes="success" Content="Buy Crypto" Click="OnBuyClick"/>
+                        <Button Classes="danger" Content="Sell Crypto" Click="OnSellClick"/>
+                    </StackPanel>
                 </Grid>
 
+                <!-- Balance and Stats Cards -->
                 <WrapPanel Margin="0,0,0,20">
-                    <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Margin="0,0,15,0" Width="250">
+                    <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Margin="0,0,15,10" Width="200">
                         <StackPanel>
-                            <TextBlock Text="Total Value" Foreground="#808090" FontSize="12"/>
-                            <TextBlock Text="{Binding TotalPortfolioValueFormatted}" FontSize="24" FontWeight="Bold"/>
+                            <TextBlock Text="Available Balance" Foreground="#808090" FontSize="12"/>
+                            <TextBlock Text="{Binding BalanceFormatted}" FontSize="24" FontWeight="Bold" Foreground="#4ECB71"/>
                         </StackPanel>
                     </Border>
-                    <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Width="250">
+                    <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Margin="0,0,15,10" Width="200">
+                        <StackPanel>
+                            <TextBlock Text="Portfolio Value" Foreground="#808090" FontSize="12"/>
+                            <TextBlock Text="{Binding TotalPortfolioValueFormatted}" FontSize="24" FontWeight="Bold" Foreground="#5B8DEE"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Margin="0,0,15,10" Width="200">
                         <StackPanel>
                             <TextBlock Text="Profit/Loss" Foreground="#808090" FontSize="12"/>
-                            <TextBlock Text="{Binding TotalProfitLossFormatted}" FontSize="24" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding TotalProfitLossFormatted}" FontSize="24" FontWeight="Bold" 
+                                       Foreground="{Binding ProfitLossColor}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Width="200">
+                        <StackPanel>
+                            <TextBlock Text="Total Assets" Foreground="#808090" FontSize="12"/>
+                            <TextBlock Text="{Binding TotalAssetsFormatted}" FontSize="24" FontWeight="Bold" Foreground="#F0B90B"/>
                         </StackPanel>
                     </Border>
                 </WrapPanel>
 
-                <!-- Add Holding Form -->
-                <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Margin="0,0,0,20" IsVisible="{Binding ShowAddHoldingForm}">
-                    <StackPanel>
-                        <TextBlock Text="Add New Holding" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
-                        <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto">
-                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                <TextBlock Text="Coin ID" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding NewHoldingCoinId}" Watermark="bitcoin"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Margin="0,0,10,0">
-                                <TextBlock Text="Symbol" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding NewHoldingSymbol}" Watermark="BTC"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="2" Margin="0,0,10,0">
-                                <TextBlock Text="Amount" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding NewHoldingAmount}" Watermark="0.5"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="3">
-                                <TextBlock Text="Purchase Price" FontSize="12" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding NewHoldingPurchasePrice}" Watermark="50000"/>
-                            </StackPanel>
-                        </Grid>
-                        <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
-                            <Button Classes="success" Content="Save" Click="OnAddHolding" Margin="0,0,10,0"/>
-                            <Button Content="Cancel" Click="OnCancelAddHolding"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-
+                <!-- Holdings Table -->
+                <TextBlock Text="My Holdings" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
                 <Border Background="#16162a" CornerRadius="10" Padding="5">
                     <DataGrid ItemsSource="{Binding Holdings}" AutoGenerateColumns="False" IsReadOnly="True" MinHeight="300">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Coin" Binding="{Binding CoinId}" Width="120"/>
                             <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="80"/>
-                            <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=\{0:N4\}}" Width="100"/>
-                            <DataGridTextColumn Header="Purchase Price" Binding="{Binding PurchasePrice, StringFormat=\{0:C2\}}" Width="120"/>
+                            <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=\{0:N6\}}" Width="120"/>
+                            <DataGridTextColumn Header="Purchase Price" Binding="{Binding PurchasePrice, StringFormat=$\{0:N2\}}" Width="130"/>
                             <DataGridTextColumn Header="Date" Binding="{Binding PurchaseDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="120"/>
                         </DataGrid.Columns>
                     </DataGrid>

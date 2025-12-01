@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using CryptoTrader.App.ViewModels;
+using CryptoTrader.App.Services;
 
 namespace CryptoTrader.App.Views;
 
@@ -47,6 +48,10 @@ public partial class LoginWindow : Window
         var session = ViewModel.LoggedInSession;
         if (session != null)
         {
+            // Store auth token in NavigationService for shared access
+            var nav = NavigationService.Instance;
+            nav.SetUserInfo(session.Username, session.IsAdmin, session.Token);
+            
             var mainWindow = new MainAppWindow(session.Username);
             mainWindow.Show();
             Close();

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CryptoTrader.Shared.Models;
 using CryptoTrader.App.Services;
 using System.IO;
+using Avalonia.Media;
 
 namespace CryptoTrader.App.ViewModels;
 
@@ -18,6 +19,13 @@ public class PortfolioViewModel : ViewModelBase
         _lang = LanguageService.Instance;
         Holdings = new ObservableCollection<CryptoHolding>();
 
+        // Use shared auth token
+        var token = NavigationService.Instance.AuthToken;
+        if (!string.IsNullOrEmpty(token))
+        {
+            _api.SetAuthToken(token);
+        }
+
         _lang.LanguageChanged += (s, e) => OnPropertyChanged(nameof(L));
 
         _ = LoadDataAsync();
@@ -26,11 +34,19 @@ public class PortfolioViewModel : ViewModelBase
     public LanguageService L => _lang;
     public ObservableCollection<CryptoHolding> Holdings { get; }
 
+    private decimal _balance;
+    public decimal Balance
+    {
+        get => _balance;
+        set { SetProperty(ref _balance, value); OnPropertyChanged(nameof(BalanceFormatted)); OnPropertyChanged(nameof(TotalAssetsFormatted)); }
+    }
+    public string BalanceFormatted => $"${Balance:N2}";
+
     private decimal _totalPortfolioValue;
     public decimal TotalPortfolioValue
     {
         get => _totalPortfolioValue;
-        set { SetProperty(ref _totalPortfolioValue, value); OnPropertyChanged(nameof(TotalPortfolioValueFormatted)); }
+        set { SetProperty(ref _totalPortfolioValue, value); OnPropertyChanged(nameof(TotalPortfolioValueFormatted)); OnPropertyChanged(nameof(TotalAssetsFormatted)); }
     }
     public string TotalPortfolioValueFormatted => $"${TotalPortfolioValue:N2}";
 
@@ -38,44 +54,14 @@ public class PortfolioViewModel : ViewModelBase
     public decimal TotalProfitLoss
     {
         get => _totalProfitLoss;
-        set { SetProperty(ref _totalProfitLoss, value); OnPropertyChanged(nameof(TotalProfitLossFormatted)); }
+        set { SetProperty(ref _totalProfitLoss, value); OnPropertyChanged(nameof(TotalProfitLossFormatted)); OnPropertyChanged(nameof(ProfitLossColor)); }
     }
     public string TotalProfitLossFormatted => $"{(TotalProfitLoss >= 0 ? "+" : "")}{TotalProfitLoss:N2}";
+    public IBrush ProfitLossColor => TotalProfitLoss >= 0 
+        ? new SolidColorBrush(Color.Parse("#4ECB71")) 
+        : new SolidColorBrush(Color.Parse("#FF6B6B"));
 
-    private string _newHoldingCoinId = "";
-    public string NewHoldingCoinId
-    {
-        get => _newHoldingCoinId;
-        set => SetProperty(ref _newHoldingCoinId, value);
-    }
-
-    private string _newHoldingSymbol = "";
-    public string NewHoldingSymbol
-    {
-        get => _newHoldingSymbol;
-        set => SetProperty(ref _newHoldingSymbol, value);
-    }
-
-    private decimal _newHoldingAmount;
-    public decimal NewHoldingAmount
-    {
-        get => _newHoldingAmount;
-        set => SetProperty(ref _newHoldingAmount, value);
-    }
-
-    private decimal _newHoldingPurchasePrice;
-    public decimal NewHoldingPurchasePrice
-    {
-        get => _newHoldingPurchasePrice;
-        set => SetProperty(ref _newHoldingPurchasePrice, value);
-    }
-
-    private bool _showAddHoldingForm;
-    public bool ShowAddHoldingForm
-    {
-        get => _showAddHoldingForm;
-        set => SetProperty(ref _showAddHoldingForm, value);
-    }
+    public string TotalAssetsFormatted => $"${(Balance + TotalPortfolioValue):N2}";
 
     private bool _isLoading;
     public bool IsLoading
@@ -111,6 +97,7 @@ public class PortfolioViewModel : ViewModelBase
             {
                 TotalPortfolioValue = summary.TotalValue;
                 TotalProfitLoss = summary.TotalProfitLoss;
+                Balance = summary.Balance;
             }
         }
         catch
@@ -119,50 +106,6 @@ public class PortfolioViewModel : ViewModelBase
         }
 
         IsLoading = false;
-    }
-
-    public async Task AddHoldingAsync()
-    {
-        if (string.IsNullOrWhiteSpace(NewHoldingCoinId) || NewHoldingAmount <= 0)
-        {
-            StatusMessage = _lang["InvalidAmount"];
-            return;
-        }
-
-        IsLoading = true;
-
-        var holding = new CryptoHolding
-        {
-            CoinId = NewHoldingCoinId.ToLower(),
-            Symbol = string.IsNullOrEmpty(NewHoldingSymbol) ? NewHoldingCoinId.ToUpper() : NewHoldingSymbol.ToUpper(),
-            Amount = NewHoldingAmount,
-            PurchasePrice = NewHoldingPurchasePrice,
-            PurchaseDate = DateTime.UtcNow
-        };
-
-        var success = await _api.AddHoldingAsync(holding);
-
-        if (success)
-        {
-            ShowAddHoldingForm = false;
-            ClearForm();
-            await LoadDataAsync();
-            StatusMessage = _lang["Success"];
-        }
-        else
-        {
-            StatusMessage = _lang["Error"];
-        }
-
-        IsLoading = false;
-    }
-
-    private void ClearForm()
-    {
-        NewHoldingCoinId = "";
-        NewHoldingSymbol = "";
-        NewHoldingAmount = 0;
-        NewHoldingPurchasePrice = 0;
     }
 
     public async Task ExportHoldingsAsync()

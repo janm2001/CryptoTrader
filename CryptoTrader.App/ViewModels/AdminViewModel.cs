@@ -17,6 +17,13 @@ public class AdminViewModel : ViewModelBase
         _api = new ApiClient();
         _nav = NavigationService.Instance;
 
+        // Use shared auth token
+        var token = _nav.AuthToken;
+        if (!string.IsNullOrEmpty(token))
+        {
+            _api.SetAuthToken(token);
+        }
+
         Users = new ObservableCollection<UserInfo>();
 
         _lang.LanguageChanged += (s, e) => OnPropertyChanged(nameof(L));

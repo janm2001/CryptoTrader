@@ -19,6 +19,13 @@ public class MarketViewModel : ViewModelBase
         _lang = LanguageService.Instance;
         CryptoPrices = new ObservableCollection<CryptoCurrency>();
 
+        // Use shared auth token
+        var token = NavigationService.Instance.AuthToken;
+        if (!string.IsNullOrEmpty(token))
+        {
+            _api.SetAuthToken(token);
+        }
+
         _lang.LanguageChanged += (s, e) => OnPropertyChanged(nameof(L));
 
         _ = LoadDataAsync();

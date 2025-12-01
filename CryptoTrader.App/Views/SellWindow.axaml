@@ -1,0 +1,104 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="CryptoTrader.App.Views.SellWindow"
+        Title="Sell Cryptocurrency"
+        Width="450"
+        Height="500"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="#1E1E1E">
+
+    <Grid Margin="25" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*,Auto">
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="Sell Cryptocurrency" FontSize="24" FontWeight="Bold" Foreground="#FF6B6B"/>
+            <TextBlock Text="Select from your holdings to sell" Foreground="#888" Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- Balance Display -->
+        <Border Grid.Row="1" Background="#2D2D2D" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="Current Balance: " Foreground="#888" FontSize="16"/>
+                <TextBlock Name="BalanceText" Text="$0.00" Foreground="#4ECB71" FontSize="16" FontWeight="Bold"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Holdings Selection -->
+        <TextBlock Grid.Row="2" Text="Select from Your Holdings" Foreground="#E0E0E0" Margin="0,0,0,5"/>
+        <ComboBox Grid.Row="3" Name="HoldingsComboBox" 
+                  Margin="0,0,0,15"
+                  PlaceholderText="Choose a holding to sell..."
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="OnHoldingSelectionChanged"/>
+
+        <!-- Holding Info -->
+        <Border Grid.Row="4" Background="#2D2D2D" CornerRadius="8" Padding="10" Margin="0,0,0,15"
+                Name="HoldingPanel" IsVisible="False">
+            <Grid ColumnDefinitions="*,*">
+                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                    <TextBlock Text="You Own" Foreground="#888" HorizontalAlignment="Center"/>
+                    <TextBlock Name="OwnedText" Text="0" Foreground="#5B8DEE" FontWeight="Bold" HorizontalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                    <TextBlock Text="Current Price" Foreground="#888" HorizontalAlignment="Center"/>
+                    <TextBlock Name="CurrentPriceText" Text="$0.00" Foreground="#F0B90B" FontWeight="Bold" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Amount Input -->
+        <TextBlock Grid.Row="5" Text="Amount to Sell" Foreground="#E0E0E0" Margin="0,0,0,5"/>
+        <Grid Grid.Row="6" ColumnDefinitions="*,Auto" Margin="0,0,0,15">
+            <TextBox Grid.Column="0" Name="AmountTextBox" 
+                     Watermark="Enter amount to sell"
+                     TextChanged="OnAmountChanged"/>
+            <Button Grid.Column="1" Content="Sell All" 
+                    Margin="10,0,0,0"
+                    Background="#5B8DEE"
+                    Foreground="White"
+                    Padding="15,8"
+                    Click="OnSellAllClick"/>
+        </Grid>
+
+        <!-- Total Value -->
+        <Border Grid.Row="7" Background="#2D2D2D" CornerRadius="8" Padding="15" Margin="0,0,0,15">
+            <Grid ColumnDefinitions="*,*">
+                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                    <TextBlock Text="Selling" Foreground="#888" HorizontalAlignment="Center"/>
+                    <TextBlock Name="SellingText" Text="0 BTC" FontSize="20" FontWeight="Bold" 
+                               Foreground="#FF6B6B" HorizontalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                    <TextBlock Text="You'll Receive" Foreground="#888" HorizontalAlignment="Center"/>
+                    <TextBlock Name="ReceiveText" Text="$0.00" FontSize="20" FontWeight="Bold" 
+                               Foreground="#4ECB71" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Status Message -->
+        <TextBlock Grid.Row="8" Name="StatusText" 
+                   TextWrapping="Wrap"
+                   Foreground="#FF6B6B" 
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Top"
+                   Margin="0,5,0,0"/>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="9" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="15">
+            <Button Content="Cancel" 
+                    Background="#444"
+                    Foreground="White"
+                    Padding="30,12"
+                    CornerRadius="5"
+                    Click="OnCancelClick"/>
+            <Button Name="SellButton" Content="Sell Now" 
+                    Background="#FF6B6B"
+                    Foreground="White"
+                    Padding="30,12"
+                    CornerRadius="5"
+                    IsEnabled="False"
+                    Click="OnSellClick"/>
+        </StackPanel>
+    </Grid>
+</Window>

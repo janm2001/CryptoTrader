@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using CryptoTrader.App.ViewModels;
+using CryptoTrader.App.Services;
 
 namespace CryptoTrader.App.Views;
 
@@ -14,9 +15,42 @@ public partial class PortfolioView : UserControl
         DataContext = new PortfolioViewModel();
     }
 
-    private void OnShowAddHolding(object? sender, RoutedEventArgs e) => ViewModel.ShowAddHoldingForm = true;
-    private async void OnAddHolding(object? sender, RoutedEventArgs e) => await ViewModel.AddHoldingAsync();
-    private void OnCancelAddHolding(object? sender, RoutedEventArgs e) => ViewModel.ShowAddHoldingForm = false;
+    private async void OnBuyClick(object? sender, RoutedEventArgs e)
+    {
+        var buyWindow = new BuyWindow();
+
+        // Show as dialog
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel is Window parentWindow)
+        {
+            await buyWindow.ShowDialog(parentWindow);
+            
+            // Refresh data if purchase was made
+            if (buyWindow.PurchaseCompleted)
+            {
+                await ViewModel.LoadDataAsync();
+            }
+        }
+    }
+
+    private async void OnSellClick(object? sender, RoutedEventArgs e)
+    {
+        var sellWindow = new SellWindow();
+
+        // Show as dialog
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel is Window parentWindow)
+        {
+            await sellWindow.ShowDialog(parentWindow);
+            
+            // Refresh data if sale was made
+            if (sellWindow.SaleCompleted)
+            {
+                await ViewModel.LoadDataAsync();
+            }
+        }
+    }
+
     private async void OnRefresh(object? sender, RoutedEventArgs e) => await ViewModel.LoadDataAsync();
     private async void OnExport(object? sender, RoutedEventArgs e) => await ViewModel.ExportHoldingsAsync();
 }

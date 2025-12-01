@@ -306,6 +306,63 @@ public class ApiClient : IDisposable
         }
     }
 
+    public async Task<decimal> GetBalanceAsync()
+    {
+        try
+        {
+            var result = await _httpClient.GetFromJsonAsync<BalanceResponse>("portfolio/balance");
+            return result?.Balance ?? 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    public async Task<BuyResult> BuyCryptoAsync(string coinId, string symbol, decimal amount, decimal pricePerUnit, decimal fee = 0, string? notes = null)
+    {
+        try
+        {
+            var request = new { CoinId = coinId, Symbol = symbol, Amount = amount, PricePerUnit = pricePerUnit, Fee = fee, Notes = notes };
+            var response = await _httpClient.PostAsJsonAsync("portfolio/buy", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<BuyResult>();
+                return result ?? new BuyResult { Success = true };
+            }
+            
+            var error = await response.Content.ReadFromJsonAsync<BuyResult>();
+            return error ?? new BuyResult { Success = false, Message = "Purchase failed" };
+        }
+        catch (Exception ex)
+        {
+            return new BuyResult { Success = false, Message = ex.Message };
+        }
+    }
+
+    public async Task<SellResult> SellCryptoAsync(string coinId, string symbol, decimal amount, decimal pricePerUnit, decimal fee = 0, string? notes = null)
+    {
+        try
+        {
+            var request = new { CoinId = coinId, Symbol = symbol, Amount = amount, PricePerUnit = pricePerUnit, Fee = fee, Notes = notes };
+            var response = await _httpClient.PostAsJsonAsync("portfolio/sell", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<SellResult>();
+                return result ?? new SellResult { Success = true };
+            }
+            
+            var error = await response.Content.ReadFromJsonAsync<SellResult>();
+            return error ?? new SellResult { Success = false, Message = "Sale failed" };
+        }
+        catch (Exception ex)
+        {
+            return new SellResult { Success = false, Message = ex.Message };
+        }
+    }
+
     #endregion
 
     #region Admin
@@ -462,6 +519,7 @@ public class PortfolioSummary
     public decimal TotalProfitLoss { get; set; }
     public decimal TotalProfitLossPercentage { get; set; }
     public int HoldingsCount { get; set; }
+    public decimal Balance { get; set; }
     public List<HoldingDetail>? Holdings { get; set; }
 }
 
@@ -496,4 +554,33 @@ public class SystemStats
     public int TotalHoldings { get; set; }
     public int TotalTransactions { get; set; }
     public int TrackedCryptos { get; set; }
+}
+
+public class BalanceResponse
+{
+    public decimal Balance { get; set; }
+}
+
+public class BuyResult
+{
+    public bool Success { get; set; }
+    public string? Message { get; set; }
+    public decimal Balance { get; set; }
+}
+
+public class SellResult
+{
+    public bool Success { get; set; }
+    public string? Message { get; set; }
+    public decimal Balance { get; set; }
+}
+
+public class CryptoOption
+{
+    public string CoinId { get; set; } = "";
+    public string Symbol { get; set; } = "";
+    public string Name { get; set; } = "";
+    public decimal CurrentPrice { get; set; }
+    
+    public override string ToString() => $"{Name} ({Symbol.ToUpper()}) - ${CurrentPrice:N2}";
 }
