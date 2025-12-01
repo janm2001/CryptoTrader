@@ -39,8 +39,16 @@ public class DatabaseContext
                 CreatedAt TEXT NOT NULL,
                 LastLoginAt TEXT,
                 IsActive INTEGER NOT NULL DEFAULT 1,
-                Role INTEGER NOT NULL DEFAULT 0
+                Role INTEGER NOT NULL DEFAULT 0,
+                Balance REAL NOT NULL DEFAULT 10000
             )");
+        
+        // Add Balance column if it doesn't exist (for existing databases)
+        try
+        {
+            connection.Execute("ALTER TABLE Users ADD COLUMN Balance REAL NOT NULL DEFAULT 10000");
+        }
+        catch { /* Column already exists */ };
 
         // Crypto prices cache table
         connection.Execute(@"
@@ -152,8 +160,8 @@ public class DatabaseContext
     {
         using var connection = GetConnection();
         return await connection.ExecuteScalarAsync<int>(@"
-            INSERT INTO Users (Username, Email, PasswordHash, Salt, CreatedAt, IsActive, Role)
-            VALUES (@Username, @Email, @PasswordHash, @Salt, @CreatedAt, @IsActive, @Role);
+            INSERT INTO Users (Username, Email, PasswordHash, Salt, CreatedAt, IsActive, Role, Balance)
+            VALUES (@Username, @Email, @PasswordHash, @Salt, @CreatedAt, @IsActive, @Role, @Balance);
             SELECT last_insert_rowid();", user);
     }
 
@@ -185,6 +193,41 @@ public class DatabaseContext
         await connection.ExecuteAsync(
             "UPDATE Users SET IsActive = @IsActive WHERE Id = @Id",
             new { Id = userId, IsActive = isActive ? 1 : 0 });
+    }
+
+    public async Task<decimal> GetUserBalanceAsync(int userId)
+    {
+        using var connection = GetConnection();
+        return await connection.ExecuteScalarAsync<decimal>(
+            "SELECT Balance FROM Users WHERE Id = @Id", new { Id = userId });
+    }
+
+    public async Task UpdateUserBalanceAsync(int userId, decimal newBalance)
+    {
+        using var connection = GetConnection();
+        await connection.ExecuteAsync(
+            "UPDATE Users SET Balance = @Balance WHERE Id = @Id",
+            new { Id = userId, Balance = newBalance });
+    }
+
+    public async Task<bool> DeductBalanceAsync(int userId, decimal amount)
+    {
+        using var connection = GetConnection();
+        var currentBalance = await GetUserBalanceAsync(userId);
+        if (currentBalance < amount) return false;
+        
+        await connection.ExecuteAsync(
+            "UPDATE Users SET Balance = Balance - @Amount WHERE Id = @Id",
+            new { Id = userId, Amount = amount });
+        return true;
+    }
+
+    public async Task AddToBalanceAsync(int userId, decimal amount)
+    {
+        using var connection = GetConnection();
+        await connection.ExecuteAsync(
+            "UPDATE Users SET Balance = Balance + @Amount WHERE Id = @Id",
+            new { Id = userId, Amount = amount });
     }
 
     #endregion

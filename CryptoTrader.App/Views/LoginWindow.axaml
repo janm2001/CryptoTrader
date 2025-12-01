@@ -53,7 +53,7 @@
     <Grid>
         <!-- Loading Overlay -->
         <Border Background="#80000000" IsVisible="{Binding IsLoading}" ZIndex="100">
-            <TextBlock Text="Loading..." FontSize="18" Foreground="White"
+            <TextBlock Text="{Binding L[Loading]}" FontSize="18" Foreground="White"
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Border>
 
@@ -73,49 +73,49 @@
 
                 <!-- Login Form -->
                 <StackPanel IsVisible="{Binding ShowLoginForm}" Spacing="5">
-                    <TextBlock Text="Welcome Back" FontSize="22" FontWeight="SemiBold"
+                    <TextBlock Text="{Binding L[Welcome]}" FontSize="22" FontWeight="SemiBold"
                                HorizontalAlignment="Center" Margin="0,0,0,20"/>
                     
-                    <TextBlock Text="Username" Margin="0,0,0,5" FontSize="13"/>
+                    <TextBlock Text="{Binding L[Username]}" Margin="0,0,0,5" FontSize="13"/>
                     <TextBox Text="{Binding LoginUsername}" Watermark="Enter username" Margin="0,0,0,15"/>
                     
-                    <TextBlock Text="Password" Margin="0,0,0,5" FontSize="13"/>
+                    <TextBlock Text="{Binding L[Password]}" Margin="0,0,0,5" FontSize="13"/>
                     <TextBox Text="{Binding LoginPassword}" PasswordChar="•" Watermark="Enter password" Margin="0,0,0,15"/>
                     
-                    <CheckBox Content="Remember me" IsChecked="{Binding LoginRememberMe}" Margin="0,0,0,20"/>
+                    <CheckBox Content="{Binding L[RememberMe]}" IsChecked="{Binding LoginRememberMe}" Margin="0,0,0,20"/>
                     
-                    <Button Classes="primary" Content="Login" HorizontalAlignment="Stretch"
+                    <Button Classes="primary" Content="{Binding L[Login]}" HorizontalAlignment="Stretch"
                             Click="OnLogin" Height="45" FontSize="15"/>
                     
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                        <TextBlock Text="Don't have an account?" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                        <Button Classes="link" Content="Register" Click="ShowRegister"/>
+                        <TextBlock Text="{Binding L[NoAccount]}" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <Button Classes="link" Content="{Binding L[Register]}" Click="ShowRegister"/>
                     </StackPanel>
                 </StackPanel>
 
                 <!-- Register Form -->
                 <StackPanel IsVisible="{Binding ShowRegisterForm}" Spacing="5">
-                    <TextBlock Text="Create Account" FontSize="22" FontWeight="SemiBold"
+                    <TextBlock Text="{Binding L[Register]}" FontSize="22" FontWeight="SemiBold"
                                HorizontalAlignment="Center" Margin="0,0,0,20"/>
                     
-                    <TextBlock Text="Username" Margin="0,0,0,5" FontSize="13"/>
+                    <TextBlock Text="{Binding L[Username]}" Margin="0,0,0,5" FontSize="13"/>
                     <TextBox Text="{Binding RegisterUsername}" Watermark="Choose username" Margin="0,0,0,10"/>
                     
-                    <TextBlock Text="Email" Margin="0,0,0,5" FontSize="13"/>
+                    <TextBlock Text="{Binding L[Email]}" Margin="0,0,0,5" FontSize="13"/>
                     <TextBox Text="{Binding RegisterEmail}" Watermark="email@example.com" Margin="0,0,0,10"/>
                     
-                    <TextBlock Text="Password" Margin="0,0,0,5" FontSize="13"/>
+                    <TextBlock Text="{Binding L[Password]}" Margin="0,0,0,5" FontSize="13"/>
                     <TextBox Text="{Binding RegisterPassword}" PasswordChar="•" Watermark="Min 6 characters" Margin="0,0,0,10"/>
                     
-                    <TextBlock Text="Confirm Password" Margin="0,0,0,5" FontSize="13"/>
+                    <TextBlock Text="{Binding L[ConfirmPassword]}" Margin="0,0,0,5" FontSize="13"/>
                     <TextBox Text="{Binding RegisterConfirmPassword}" PasswordChar="•" Watermark="Confirm password" Margin="0,0,0,20"/>
                     
-                    <Button Classes="primary" Content="Register" HorizontalAlignment="Stretch"
+                    <Button Classes="primary" Content="{Binding L[Register]}" HorizontalAlignment="Stretch"
                             Click="OnRegister" Height="45" FontSize="15"/>
                     
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-                        <TextBlock Text="Already have an account?" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                        <Button Classes="link" Content="Login" Click="ShowLogin"/>
+                        <TextBlock Text="{Binding L[HasAccount]}" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <Button Classes="link" Content="{Binding L[Login]}" Click="ShowLogin"/>
                     </StackPanel>
                 </StackPanel>
             </StackPanel>

@@ -223,6 +223,7 @@ public class PortfolioController : ControllerBase
         }
 
         var holdings = (await _db.GetUserHoldingsAsync(session.UserId)).ToList();
+        var balance = await _db.GetUserBalanceAsync(session.UserId);
         
         if (holdings.Count == 0)
         {
@@ -232,7 +233,8 @@ public class PortfolioController : ControllerBase
                 TotalCost = 0m,
                 TotalProfitLoss = 0m,
                 TotalProfitLossPercentage = 0m,
-                HoldingsCount = 0
+                HoldingsCount = 0,
+                Balance = balance
             });
         }
 
@@ -251,8 +253,150 @@ public class PortfolioController : ControllerBase
             TotalCost = totalCost,
             TotalProfitLoss = totalProfitLoss,
             TotalProfitLossPercentage = totalProfitLossPercentage,
-            HoldingsCount = holdings.Count
+            HoldingsCount = holdings.Count,
+            Balance = balance
         });
+    }
+
+    /// <summary>
+    /// Gets user's balance
+    /// </summary>
+    [HttpGet("balance")]
+    public async Task<ActionResult> GetBalance()
+    {
+        var session = await GetSessionAsync();
+        if (session == null)
+        {
+            return Unauthorized(new { message = "Invalid or missing token" });
+        }
+
+        var balance = await _db.GetUserBalanceAsync(session.UserId);
+        return Ok(new { Balance = balance });
+    }
+
+    /// <summary>
+    /// Buys crypto with balance check
+    /// </summary>
+    [HttpPost("buy")]
+    public async Task<ActionResult> BuyCrypto([FromBody] BuyCryptoRequest request)
+    {
+        var session = await GetSessionAsync();
+        if (session == null)
+        {
+            return Unauthorized(new { message = "Invalid or missing token" });
+        }
+
+        var totalCost = (request.Amount * request.PricePerUnit) + request.Fee;
+        var balance = await _db.GetUserBalanceAsync(session.UserId);
+
+        if (balance < totalCost)
+        {
+            return BadRequest(new { message = "Insufficient balance", balance = balance, required = totalCost });
+        }
+
+        // Deduct from balance
+        var success = await _db.DeductBalanceAsync(session.UserId, totalCost);
+        if (!success)
+        {
+            return BadRequest(new { message = "Failed to deduct balance" });
+        }
+
+        // Add the holding
+        var holding = new CryptoHolding
+        {
+            UserId = session.UserId,
+            CoinId = request.CoinId,
+            Symbol = request.Symbol,
+            Amount = request.Amount,
+            PurchasePrice = request.PricePerUnit,
+            PurchaseDate = DateTime.UtcNow
+        };
+        await _db.AddHoldingAsync(holding);
+
+        // Record transaction
+        var transaction = new CryptoTransaction
+        {
+            UserId = session.UserId,
+            CoinId = request.CoinId,
+            Symbol = request.Symbol,
+            Type = TransactionType.Buy,
+            Amount = request.Amount,
+            PricePerUnit = request.PricePerUnit,
+            TotalValue = request.Amount * request.PricePerUnit,
+            Fee = request.Fee,
+            Timestamp = DateTime.UtcNow,
+            Notes = request.Notes
+        };
+        await _db.AddTransactionAsync(transaction);
+
+        var newBalance = await _db.GetUserBalanceAsync(session.UserId);
+        return Ok(new { message = "Purchase successful", balance = newBalance });
+    }
+
+    /// <summary>
+    /// Sells crypto and adds to balance
+    /// </summary>
+    [HttpPost("sell")]
+    public async Task<ActionResult> SellCrypto([FromBody] SellCryptoRequest request)
+    {
+        var session = await GetSessionAsync();
+        if (session == null)
+        {
+            return Unauthorized(new { message = "Invalid or missing token" });
+        }
+
+        // Check if user has enough holdings
+        var holdings = (await _db.GetUserHoldingsAsync(session.UserId))
+            .Where(h => h.CoinId == request.CoinId)
+            .ToList();
+
+        var totalOwned = holdings.Sum(h => h.Amount);
+        if (totalOwned < request.Amount)
+        {
+            return BadRequest(new { message = "Insufficient holdings", owned = totalOwned, requested = request.Amount });
+        }
+
+        // Remove from holdings (FIFO - First In, First Out)
+        decimal amountToSell = request.Amount;
+        foreach (var holding in holdings.OrderBy(h => h.PurchaseDate))
+        {
+            if (amountToSell <= 0) break;
+
+            if (holding.Amount <= amountToSell)
+            {
+                amountToSell -= holding.Amount;
+                await _db.DeleteHoldingAsync(holding.Id, session.UserId);
+            }
+            else
+            {
+                holding.Amount -= amountToSell;
+                await _db.UpdateHoldingAsync(holding);
+                amountToSell = 0;
+            }
+        }
+
+        // Add to balance (minus fees)
+        var totalValue = (request.Amount * request.PricePerUnit) - request.Fee;
+        await _db.AddToBalanceAsync(session.UserId, totalValue);
+
+        // Record transaction
+        var transaction = new CryptoTransaction
+        {
+            UserId = session.UserId,
+            CoinId = request.CoinId,
+            Symbol = request.Symbol,
+            Type = TransactionType.Sell,
+            Amount = request.Amount,
+            PricePerUnit = request.PricePerUnit,
+            TotalValue = request.Amount * request.PricePerUnit,
+            Fee = request.Fee,
+            Timestamp = DateTime.UtcNow,
+            Notes = request.Notes
+        };
+        await _db.AddTransactionAsync(transaction);
+
+        var newBalance = await _db.GetUserBalanceAsync(session.UserId);
+        return Ok(new { message = "Sale successful", balance = newBalance });
     }
 }
 
@@ -280,5 +424,25 @@ public class AddTransactionRequest
     public decimal PricePerUnit { get; set; }
     public decimal Fee { get; set; }
     public DateTime? Timestamp { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class BuyCryptoRequest
+{
+    public string CoinId { get; set; } = string.Empty;
+    public string Symbol { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
+    public decimal PricePerUnit { get; set; }
+    public decimal Fee { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class SellCryptoRequest
+{
+    public string CoinId { get; set; } = string.Empty;
+    public string Symbol { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
+    public decimal PricePerUnit { get; set; }
+    public decimal Fee { get; set; }
     public string? Notes { get; set; }
 }

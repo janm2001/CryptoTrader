@@ -54,7 +54,7 @@
 
     <Grid>
         <Border Background="#80000000" IsVisible="{Binding IsLoading}" ZIndex="100">
-            <TextBlock Text="Loading..." FontSize="18" Foreground="White"
+            <TextBlock Text="{Binding L[Loading]}" FontSize="18" Foreground="White"
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Border>
 
@@ -66,10 +66,10 @@
         <ScrollViewer Padding="30">
             <StackPanel>
                 <Grid Margin="0,0,0,20">
-                    <TextBlock Text="My Portfolio" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding L[MyPortfolio]}" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-                        <Button Classes="success" Content="Buy Crypto" Click="OnBuyClick"/>
-                        <Button Classes="danger" Content="Sell Crypto" Click="OnSellClick"/>
+                        <Button Classes="success" Content="{Binding L[BuyCrypto]}" Click="OnBuyClick"/>
+                        <Button Classes="danger" Content="{Binding L[SellCrypto]}" Click="OnSellClick"/>
                     </StackPanel>
                 </Grid>
 
@@ -77,48 +77,48 @@
                 <WrapPanel Margin="0,0,0,20">
                     <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Margin="0,0,15,10" Width="200">
                         <StackPanel>
-                            <TextBlock Text="Available Balance" Foreground="#808090" FontSize="12"/>
+                            <TextBlock Text="{Binding L[AvailableBalance]}" Foreground="#808090" FontSize="12"/>
                             <TextBlock Text="{Binding BalanceFormatted}" FontSize="24" FontWeight="Bold" Foreground="#4ECB71"/>
                         </StackPanel>
                     </Border>
                     <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Margin="0,0,15,10" Width="200">
                         <StackPanel>
-                            <TextBlock Text="Portfolio Value" Foreground="#808090" FontSize="12"/>
+                            <TextBlock Text="{Binding L[PortfolioValue]}" Foreground="#808090" FontSize="12"/>
                             <TextBlock Text="{Binding TotalPortfolioValueFormatted}" FontSize="24" FontWeight="Bold" Foreground="#5B8DEE"/>
                         </StackPanel>
                     </Border>
                     <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Margin="0,0,15,10" Width="200">
                         <StackPanel>
-                            <TextBlock Text="Profit/Loss" Foreground="#808090" FontSize="12"/>
+                            <TextBlock Text="{Binding L[ProfitLoss]}" Foreground="#808090" FontSize="12"/>
                             <TextBlock Text="{Binding TotalProfitLossFormatted}" FontSize="24" FontWeight="Bold" 
                                        Foreground="{Binding ProfitLossColor}"/>
                         </StackPanel>
                     </Border>
                     <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Width="200">
                         <StackPanel>
-                            <TextBlock Text="Total Assets" Foreground="#808090" FontSize="12"/>
+                            <TextBlock Text="{Binding L[TotalAssets]}" Foreground="#808090" FontSize="12"/>
                             <TextBlock Text="{Binding TotalAssetsFormatted}" FontSize="24" FontWeight="Bold" Foreground="#F0B90B"/>
                         </StackPanel>
                     </Border>
                 </WrapPanel>
 
                 <!-- Holdings Table -->
-                <TextBlock Text="My Holdings" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                <TextBlock Text="{Binding L[MyHoldings]}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
                 <Border Background="#16162a" CornerRadius="10" Padding="5">
                     <DataGrid ItemsSource="{Binding Holdings}" AutoGenerateColumns="False" IsReadOnly="True" MinHeight="300">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Coin" Binding="{Binding CoinId}" Width="120"/>
-                            <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="80"/>
-                            <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=\{0:N6\}}" Width="120"/>
-                            <DataGridTextColumn Header="Purchase Price" Binding="{Binding PurchasePrice, StringFormat=$\{0:N2\}}" Width="130"/>
-                            <DataGridTextColumn Header="Date" Binding="{Binding PurchaseDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="120"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:PortfolioViewModel)DataContext).L[Coin]}" Binding="{Binding CoinId}" Width="120"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:PortfolioViewModel)DataContext).L[Symbol]}" Binding="{Binding Symbol}" Width="80"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:PortfolioViewModel)DataContext).L[Amount]}" Binding="{Binding Amount, StringFormat=\{0:N6\}}" Width="120"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:PortfolioViewModel)DataContext).L[PurchasePrice]}" Binding="{Binding PurchasePrice, StringFormat=$\{0:N2\}}" Width="130"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:PortfolioViewModel)DataContext).L[Date]}" Binding="{Binding PurchaseDate, StringFormat=\{0:yyyy-MM-dd\}}" Width="120"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>
 
                 <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
-                    <Button Classes="primary" Content="Refresh" Click="OnRefresh" Margin="0,0,10,0"/>
-                    <Button Classes="success" Content="Export Holdings" Click="OnExport"/>
+                    <Button Classes="primary" Content="{Binding L[Refresh]}" Click="OnRefresh" Margin="0,0,10,0"/>
+                    <Button Classes="success" Content="{Binding L[ExportHoldings]}" Click="OnExport"/>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

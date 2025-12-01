@@ -19,6 +19,7 @@ public class HoldingOption
 public partial class SellWindow : Window
 {
     private readonly ApiClient _api;
+    private readonly LanguageService _lang;
     private decimal _balance;
     private List<HoldingOption> _holdingOptions = new();
     private HoldingOption? _selectedHolding;
@@ -31,6 +32,7 @@ public partial class SellWindow : Window
     {
         InitializeComponent();
         _api = new ApiClient();
+        _lang = LanguageService.Instance;
         
         // Use shared auth token
         var token = NavigationService.Instance.AuthToken;
@@ -39,7 +41,13 @@ public partial class SellWindow : Window
             _api.SetAuthToken(token);
         }
         
+        ApplyTranslations();
         Loaded += async (s, e) => await LoadDataAsync();
+    }
+    
+    private void ApplyTranslations()
+    {
+        Title = _lang["SellCrypto"];
     }
 
     public void SetAuthToken(string token)
@@ -70,12 +78,12 @@ public partial class SellWindow : Window
 
             if (!_holdingOptions.Any())
             {
-                StatusText.Text = "You don't have any holdings to sell.";
+                StatusText.Text = _lang["NoHoldings"];
             }
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Error loading data: {ex.Message}";
+            StatusText.Text = $"{_lang["Error"]}: {ex.Message}";
         }
     }
 
@@ -129,7 +137,7 @@ public partial class SellWindow : Window
 
         if (_amount > _selectedHolding.Holding.Amount)
         {
-            StatusText.Text = $"You only own {_selectedHolding.Holding.Amount:N8} {_selectedHolding.Holding.Symbol.ToUpper()}";
+            StatusText.Text = $"{_lang["InsufficientHoldings"]} ({_selectedHolding.Holding.Amount:N8} {_selectedHolding.Holding.Symbol.ToUpper()})";
             StatusText.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#FF6B6B"));
             SellButton.IsEnabled = false;
         }
@@ -150,7 +158,7 @@ public partial class SellWindow : Window
         if (_selectedHolding == null || _amount <= 0) return;
 
         SellButton.IsEnabled = false;
-        StatusText.Text = "Processing sale...";
+        StatusText.Text = _lang["Processing"];
         StatusText.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#F0B90B"));
 
         var result = await _api.SellCryptoAsync(
@@ -164,7 +172,7 @@ public partial class SellWindow : Window
         {
             SaleCompleted = true;
             NewBalance = result.Balance;
-            StatusText.Text = "Sale successful!";
+            StatusText.Text = _lang["SaleSuccessful"];
             StatusText.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#4ECB71"));
             
             await System.Threading.Tasks.Task.Delay(1000);
@@ -172,7 +180,7 @@ public partial class SellWindow : Window
         }
         else
         {
-            StatusText.Text = result.Message ?? "Sale failed";
+            StatusText.Text = result.Message ?? _lang["Error"];
             StatusText.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#FF6B6B"));
             SellButton.IsEnabled = true;
         }

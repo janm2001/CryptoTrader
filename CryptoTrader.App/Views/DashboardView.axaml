@@ -45,7 +45,7 @@
     <Grid>
         <!-- Loading Overlay -->
         <Border Background="#80000000" IsVisible="{Binding IsLoading}" ZIndex="100">
-            <TextBlock Text="Loading..." FontSize="18" Foreground="White"
+            <TextBlock Text="{Binding L[Loading]}" FontSize="18" Foreground="White"
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Border>
 
@@ -57,42 +57,42 @@
 
         <ScrollViewer Padding="30">
             <StackPanel>
-                <TextBlock Text="Dashboard" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
+                <TextBlock Text="{Binding L[NavDashboard]}" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
                 
                 <WrapPanel Margin="0,0,0,30">
                     <Border Background="#2d2d4a" CornerRadius="10" Padding="25" Margin="0,0,15,15" Width="280">
                         <StackPanel>
-                            <TextBlock Text="Total Value" Foreground="#808090" FontSize="14"/>
+                            <TextBlock Text="{Binding L[TotalValue]}" Foreground="#808090" FontSize="14"/>
                             <TextBlock Text="{Binding TotalPortfolioValueFormatted}" FontSize="32" FontWeight="Bold" Margin="0,10,0,0"/>
                         </StackPanel>
                     </Border>
                     <Border Background="#2d2d4a" CornerRadius="10" Padding="25" Margin="0,0,15,15" Width="280">
                         <StackPanel>
-                            <TextBlock Text="Total Profit/Loss" Foreground="#808090" FontSize="14"/>
+                            <TextBlock Text="{Binding L[TotalProfit]}" Foreground="#808090" FontSize="14"/>
                             <TextBlock Text="{Binding TotalProfitLossFormatted}" FontSize="32" FontWeight="Bold" Margin="0,10,0,0"/>
                             <TextBlock Text="{Binding TotalProfitLossPercentageFormatted}" FontSize="14"/>
                         </StackPanel>
                     </Border>
                 </WrapPanel>
                 
-                <TextBlock Text="Market Overview" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                <TextBlock Text="{Binding L[MarketOverview]}" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,15"/>
                 
                 <Border Background="#16162a" CornerRadius="10" Padding="5">
                     <DataGrid ItemsSource="{Binding CryptoPrices}" AutoGenerateColumns="False" IsReadOnly="True" Height="350">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding MarketCapRank}" Width="50"/>
-                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="150"/>
-                            <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="80"/>
-                            <DataGridTextColumn Header="Price" Binding="{Binding CurrentPrice, StringFormat=\{0:C2\}}" Width="120"/>
-                            <DataGridTextColumn Header="24h %" Binding="{Binding PriceChangePercentage24h, StringFormat=\{0:N2\}%}" Width="100"/>
-                            <DataGridTextColumn Header="Market Cap" Binding="{Binding MarketCap, StringFormat=\{0:N0\}}" Width="150"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).L[Name]}" Binding="{Binding Name}" Width="150"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).L[Symbol]}" Binding="{Binding Symbol}" Width="80"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).L[Price]}" Binding="{Binding CurrentPrice, StringFormat=\{0:C2\}}" Width="120"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).L[Change24h]}" Binding="{Binding PriceChangePercentage24h, StringFormat=\{0:N2\}%}" Width="100"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).L[MarketCap]}" Binding="{Binding MarketCap, StringFormat=\{0:N0\}}" Width="150"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>
                 
                 <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
-                    <Button Classes="primary" Content="Refresh" Click="OnRefresh" Margin="0,0,10,0"/>
-                    <Button Classes="success" Content="Export to Excel" Click="OnExport"/>
+                    <Button Classes="primary" Content="{Binding L[Refresh]}" Click="OnRefresh" Margin="0,0,10,0"/>
+                    <Button Classes="success" Content="{Binding L[ExportExcel]}" Click="OnExport"/>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

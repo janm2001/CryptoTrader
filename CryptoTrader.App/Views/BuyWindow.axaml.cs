@@ -12,6 +12,7 @@ namespace CryptoTrader.App.Views;
 public partial class BuyWindow : Window
 {
     private readonly ApiClient _api;
+    private readonly LanguageService _lang;
     private decimal _balance;
     private List<CryptoCurrency> _cryptos = new();
     private CryptoCurrency? _selectedCrypto;
@@ -24,6 +25,7 @@ public partial class BuyWindow : Window
     {
         InitializeComponent();
         _api = new ApiClient();
+        _lang = LanguageService.Instance;
         
         // Use shared auth token
         var token = NavigationService.Instance.AuthToken;
@@ -32,7 +34,13 @@ public partial class BuyWindow : Window
             _api.SetAuthToken(token);
         }
         
+        ApplyTranslations();
         Loaded += async (s, e) => await LoadDataAsync();
+    }
+    
+    private void ApplyTranslations()
+    {
+        Title = _lang["BuyCrypto"];
     }
 
     public void SetAuthToken(string token)
@@ -63,7 +71,7 @@ public partial class BuyWindow : Window
         }
         catch (Exception ex)
         {
-            StatusText.Text = $"Error loading data: {ex.Message}";
+            StatusText.Text = $"{_lang["Error"]}: {ex.Message}";
         }
     }
 
@@ -111,7 +119,7 @@ public partial class BuyWindow : Window
 
         if (totalCost > _balance)
         {
-            StatusText.Text = "Insufficient balance!";
+            StatusText.Text = _lang["InsufficientBalance"];
             StatusText.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#FF6B6B"));
             BuyButton.IsEnabled = false;
         }
@@ -132,7 +140,7 @@ public partial class BuyWindow : Window
         if (_selectedCrypto == null || _amount <= 0) return;
 
         BuyButton.IsEnabled = false;
-        StatusText.Text = "Processing purchase...";
+        StatusText.Text = _lang["Processing"];
         StatusText.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#F0B90B"));
 
         var result = await _api.BuyCryptoAsync(
@@ -146,7 +154,7 @@ public partial class BuyWindow : Window
         {
             PurchaseCompleted = true;
             NewBalance = result.Balance;
-            StatusText.Text = "Purchase successful!";
+            StatusText.Text = _lang["PurchaseSuccessful"];
             StatusText.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#4ECB71"));
             
             await System.Threading.Tasks.Task.Delay(1000);
@@ -154,7 +162,7 @@ public partial class BuyWindow : Window
         }
         else
         {
-            StatusText.Text = result.Message ?? "Purchase failed";
+            StatusText.Text = result.Message ?? _lang["Error"];
             StatusText.Foreground = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#FF6B6B"));
             BuyButton.IsEnabled = true;
         }

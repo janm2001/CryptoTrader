@@ -54,7 +54,7 @@
 
     <Grid>
         <Border Background="#80000000" IsVisible="{Binding IsLoading}" ZIndex="100">
-            <TextBlock Text="Loading..." FontSize="18" Foreground="White"
+            <TextBlock Text="{Binding L[Loading]}" FontSize="18" Foreground="White"
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Border>
 
@@ -66,43 +66,43 @@
         <ScrollViewer Padding="30">
             <StackPanel>
                 <Grid Margin="0,0,0,20">
-                    <TextBlock Text="Transaction History" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
-                    <Button Classes="primary" Content="Add Transaction" HorizontalAlignment="Right" Click="OnShowAddTransaction"/>
+                    <TextBlock Text="{Binding L[TransactionHistory]}" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <Button Classes="primary" Content="{Binding L[AddTransaction]}" HorizontalAlignment="Right" Click="OnShowAddTransaction"/>
                 </Grid>
 
                 <!-- Add Transaction Form -->
                 <Border Background="#2d2d4a" CornerRadius="10" Padding="20" Margin="0,0,0,20" IsVisible="{Binding ShowAddTransactionForm}">
                     <StackPanel>
-                        <TextBlock Text="Add Transaction" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                        <TextBlock Text="{Binding L[AddTransaction]}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                            <RadioButton Content="Buy" IsChecked="{Binding NewTransactionIsBuy}" GroupName="TxType" Margin="0,0,20,0"/>
-                            <RadioButton Content="Sell" GroupName="TxType"/>
+                            <RadioButton Content="{Binding L[Buy]}" IsChecked="{Binding NewTransactionIsBuy}" GroupName="TxType" Margin="0,0,20,0"/>
+                            <RadioButton Content="{Binding L[Sell]}" GroupName="TxType"/>
                         </StackPanel>
                         <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto">
                             <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                <TextBlock Text="Coin ID" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBlock Text="{Binding L[Coin]}" FontSize="12" Margin="0,0,0,5"/>
                                 <TextBox Text="{Binding NewTransactionCoinId}" Watermark="bitcoin"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Margin="0,0,10,0">
-                                <TextBlock Text="Amount" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBlock Text="{Binding L[Amount]}" FontSize="12" Margin="0,0,0,5"/>
                                 <TextBox Text="{Binding NewTransactionAmount}" Watermark="0.5"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2" Margin="0,0,10,0">
-                                <TextBlock Text="Price Per Unit" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBlock Text="{Binding L[PricePerUnit]}" FontSize="12" Margin="0,0,0,5"/>
                                 <TextBox Text="{Binding NewTransactionPricePerUnit}" Watermark="50000"/>
                             </StackPanel>
                             <StackPanel Grid.Column="3">
-                                <TextBlock Text="Fee" FontSize="12" Margin="0,0,0,5"/>
+                                <TextBlock Text="{Binding L[Fee]}" FontSize="12" Margin="0,0,0,5"/>
                                 <TextBox Text="{Binding NewTransactionFee}" Watermark="0"/>
                             </StackPanel>
                         </Grid>
                         <StackPanel Margin="0,10,0,0">
-                            <TextBlock Text="Notes (optional)" FontSize="12" Margin="0,0,0,5"/>
+                            <TextBlock Text="{Binding L[Notes]}" FontSize="12" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding NewTransactionNotes}" Watermark="Notes..."/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
-                            <Button Classes="success" Content="Save" Click="OnAddTransaction" Margin="0,0,10,0"/>
-                            <Button Content="Cancel" Click="OnCancelAddTransaction"/>
+                            <Button Classes="success" Content="{Binding L[Save]}" Click="OnAddTransaction" Margin="0,0,10,0"/>
+                            <Button Content="{Binding L[Cancel]}" Click="OnCancelAddTransaction"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -110,20 +110,20 @@
                 <Border Background="#16162a" CornerRadius="10" Padding="5">
                     <DataGrid ItemsSource="{Binding Transactions}" AutoGenerateColumns="False" IsReadOnly="True" MinHeight="400">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Date" Binding="{Binding Timestamp, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" Width="140"/>
-                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="70"/>
-                            <DataGridTextColumn Header="Coin" Binding="{Binding CoinId}" Width="100"/>
-                            <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat=\{0:N4\}}" Width="100"/>
-                            <DataGridTextColumn Header="Price" Binding="{Binding PricePerUnit, StringFormat=\{0:C2\}}" Width="100"/>
-                            <DataGridTextColumn Header="Total" Binding="{Binding TotalValue, StringFormat=\{0:C2\}}" Width="120"/>
-                            <DataGridTextColumn Header="Fee" Binding="{Binding Fee, StringFormat=\{0:C2\}}" Width="80"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[Date]}" Binding="{Binding Timestamp, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" Width="140"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[TransactionType]}" Binding="{Binding Type}" Width="70"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[Coin]}" Binding="{Binding CoinId}" Width="100"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[Amount]}" Binding="{Binding Amount, StringFormat=\{0:N4\}}" Width="100"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[Price]}" Binding="{Binding PricePerUnit, StringFormat=\{0:C2\}}" Width="100"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[TotalValue]}" Binding="{Binding TotalValue, StringFormat=\{0:C2\}}" Width="120"/>
+                            <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:TransactionsViewModel)DataContext).L[Fee]}" Binding="{Binding Fee, StringFormat=\{0:C2\}}" Width="80"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>
 
                 <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
-                    <Button Classes="primary" Content="Refresh" Click="OnRefresh" Margin="0,0,10,0"/>
-                    <Button Classes="success" Content="Export Transactions" Click="OnExport"/>
+                    <Button Classes="primary" Content="{Binding L[Refresh]}" Click="OnRefresh" Margin="0,0,10,0"/>
+                    <Button Classes="success" Content="{Binding L[ExportTransactions]}" Click="OnExport"/>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

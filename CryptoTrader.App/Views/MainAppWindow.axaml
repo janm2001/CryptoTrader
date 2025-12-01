@@ -53,37 +53,37 @@
                     <Button Classes="nav" x:Name="NavDashboard" Click="NavigateToDashboard">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="📊" FontSize="18" Margin="0,0,10,0"/>
-                            <TextBlock Text="Dashboard" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding L[NavDashboard]}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Classes="nav" x:Name="NavPortfolio" Click="NavigateToPortfolio">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="💼" FontSize="18" Margin="0,0,10,0"/>
-                            <TextBlock Text="Portfolio" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding L[NavPortfolio]}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Classes="nav" x:Name="NavMarket" Click="NavigateToMarket">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="📈" FontSize="18" Margin="0,0,10,0"/>
-                            <TextBlock Text="Market" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding L[NavMarket]}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Classes="nav" x:Name="NavTransactions" Click="NavigateToTransactions">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="📋" FontSize="18" Margin="0,0,10,0"/>
-                            <TextBlock Text="Transactions" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding L[NavTransactions]}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Classes="nav" x:Name="NavSettings" Click="NavigateToSettings">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⚙️" FontSize="18" Margin="0,0,10,0"/>
-                            <TextBlock Text="Settings" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding L[NavSettings]}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Classes="nav" x:Name="NavAdmin" Click="NavigateToAdmin" IsVisible="{Binding IsAdmin}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="🔐" FontSize="18" Margin="0,0,10,0"/>
-                            <TextBlock Text="Admin" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding L[NavAdmin]}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -91,7 +91,7 @@
                 <Button Classes="nav" DockPanel.Dock="Bottom" Click="OnLogout" Margin="0,0,0,20">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="🚪" FontSize="18" Margin="0,0,10,0"/>
-                        <TextBlock Text="Logout" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding L[NavLogout]}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
                 <Border/>

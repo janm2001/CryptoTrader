@@ -14,6 +14,7 @@ public class User
     public DateTime? LastLoginAt { get; set; }
     public bool IsActive { get; set; } = true;
     public UserRole Role { get; set; } = UserRole.User;
+    public decimal Balance { get; set; } = 10000m; // Starting balance for new users
 }
 
 public enum UserRole
@@ -31,6 +32,8 @@ public class UserSession
     public string Username { get; set; } = string.Empty;
     public string Token { get; set; } = string.Empty;
     public DateTime ExpiresAt { get; set; }
+    public decimal Balance { get; set; }
+    public bool IsAdmin { get; set; }
     public bool IsValid => DateTime.UtcNow < ExpiresAt;
 }
 

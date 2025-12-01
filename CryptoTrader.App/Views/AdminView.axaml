@@ -18,12 +18,12 @@
                 <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TotalTransactions}"
                            FontSize="24" FontWeight="Bold" Foreground="#4ECB71" HorizontalAlignment="Center"/>
 
-                <TextBlock Grid.Row="0" Grid.Column="2" Text="Holdings"
+                <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding L[MyHoldings]}"
                            Foreground="#888" HorizontalAlignment="Center"/>
                 <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding TotalHoldings}"
                            FontSize="24" FontWeight="Bold" Foreground="#F0B90B" HorizontalAlignment="Center"/>
 
-                <TextBlock Grid.Row="0" Grid.Column="3" Text="Tracked Cryptos"
+                <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding L[CryptoMarket]}"
                            Foreground="#888" HorizontalAlignment="Center"/>
                 <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding TrackedCryptos}"
                            FontSize="24" FontWeight="Bold" Foreground="#E0E0E0" HorizontalAlignment="Center"/>
@@ -45,16 +45,16 @@
                           Name="UsersGrid">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
-                        <DataGridTextColumn Header="Username" Binding="{Binding Username}" Width="*"/>
-                        <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="*"/>
-                        <DataGridTextColumn Header="Role" Binding="{Binding Role}" Width="80"/>
-                        <DataGridCheckBoxColumn Header="Active" Binding="{Binding IsActive}" Width="70"/>
-                        <DataGridTextColumn Header="Created" Binding="{Binding CreatedAt, StringFormat={}{0:d}}" Width="120"/>
+                        <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:AdminViewModel)DataContext).L[Username]}" Binding="{Binding Username}" Width="*"/>
+                        <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:AdminViewModel)DataContext).L[Email]}" Binding="{Binding Email}" Width="*"/>
+                        <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:AdminViewModel)DataContext).L[UserRole]}" Binding="{Binding Role}" Width="80"/>
+                        <DataGridCheckBoxColumn Header="{Binding $parent[UserControl].((vm:AdminViewModel)DataContext).L[Active]}" Binding="{Binding IsActive}" Width="70"/>
+                        <DataGridTextColumn Header="{Binding $parent[UserControl].((vm:AdminViewModel)DataContext).L[Date]}" Binding="{Binding CreatedAt, StringFormat={}{0:d}}" Width="120"/>
                         <DataGridTemplateColumn Header="Actions" Width="180">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Center">
-                                        <Button Content="Toggle Admin"
+                                        <Button Content="{Binding $parent[UserControl].((vm:AdminViewModel)DataContext).L[ChangeRole]}"
                                                 Background="#5B8DEE"
                                                 Foreground="White"
                                                 Padding="8,4"
@@ -62,7 +62,7 @@
                                                 CornerRadius="3"
                                                 Tag="{Binding}"
                                                 Click="OnToggleAdminClick"/>
-                                        <Button Content="Delete"
+                                        <Button Content="{Binding $parent[UserControl].((vm:AdminViewModel)DataContext).L[Delete]}"
                                                 Background="#FF6B6B"
                                                 Foreground="White"
                                                 Padding="8,4"
@@ -111,7 +111,7 @@
             </TextBlock>
 
             <!-- Loading -->
-            <TextBlock Text="..." FontSize="20" Foreground="#5B8DEE"
+            <TextBlock Text="{Binding L[Loading]}" FontSize="14" Foreground="#5B8DEE"
                        IsVisible="{Binding IsLoading}" VerticalAlignment="Center"/>
         </StackPanel>
     </Grid>
