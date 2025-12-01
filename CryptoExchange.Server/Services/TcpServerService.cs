@@ -79,12 +79,12 @@ public class TcpServerService
         Log("TCP Server stopped");
     }
 
-    public void BroadcastMessage(NetworkMessage message)
+    public async Task BroadcastMessage(NetworkMessage message)
     {
         var json = JsonSerializer.Serialize(message, message.GetType());
         foreach (var client in _clients.Values)
         {
-            client.SendMessageAsync(json);
+            await client.SendMessageAsync(json);
         }
     }
 

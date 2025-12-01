@@ -72,7 +72,7 @@ public class PriceUpdateService
                     Prices = prices
                 };
                 
-                _tcpServer.BroadcastMessage(response);
+                await _tcpServer.BroadcastMessage(response);
                 await _udpServer.BroadcastPriceUpdatesAsync(prices);
                 
                 OnPricesUpdated?.Invoke(this, prices);
