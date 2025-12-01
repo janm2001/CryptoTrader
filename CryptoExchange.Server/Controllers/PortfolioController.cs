@@ -291,14 +291,14 @@ public class PortfolioController : ControllerBase
 
         if (balance < totalCost)
         {
-            return BadRequest(new { message = "Insufficient balance", balance = balance, required = totalCost });
+            return BadRequest(new { Success = false, Message = "Insufficient balance", Balance = balance, Required = totalCost });
         }
 
         // Deduct from balance
-        var success = await _db.DeductBalanceAsync(session.UserId, totalCost);
-        if (!success)
+        var dbSuccess = await _db.DeductBalanceAsync(session.UserId, totalCost);
+        if (!dbSuccess)
         {
-            return BadRequest(new { message = "Failed to deduct balance" });
+            return BadRequest(new { Success = false, Message = "Failed to deduct balance" });
         }
 
         // Add the holding
@@ -330,7 +330,7 @@ public class PortfolioController : ControllerBase
         await _db.AddTransactionAsync(transaction);
 
         var newBalance = await _db.GetUserBalanceAsync(session.UserId);
-        return Ok(new { message = "Purchase successful", balance = newBalance });
+        return Ok(new { Success = true, Message = "Purchase successful", Balance = newBalance });
     }
 
     /// <summary>
@@ -353,7 +353,7 @@ public class PortfolioController : ControllerBase
         var totalOwned = holdings.Sum(h => h.Amount);
         if (totalOwned < request.Amount)
         {
-            return BadRequest(new { message = "Insufficient holdings", owned = totalOwned, requested = request.Amount });
+            return BadRequest(new { Success = false, Message = "Insufficient holdings", Owned = totalOwned, Requested = request.Amount });
         }
 
         // Remove from holdings (FIFO - First In, First Out)
@@ -396,7 +396,7 @@ public class PortfolioController : ControllerBase
         await _db.AddTransactionAsync(transaction);
 
         var newBalance = await _db.GetUserBalanceAsync(session.UserId);
-        return Ok(new { message = "Sale successful", balance = newBalance });
+        return Ok(new { Success = true, Message = "Sale successful", Balance = newBalance });
     }
 }
 

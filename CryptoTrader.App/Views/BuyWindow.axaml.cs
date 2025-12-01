@@ -150,6 +150,7 @@ public partial class BuyWindow : Window
             _selectedCrypto.CurrentPrice
         );
 
+
         if (result.Success)
         {
             PurchaseCompleted = true;
