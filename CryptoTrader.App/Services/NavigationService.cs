@@ -37,4 +37,11 @@ public class NavigationService
         IsAdmin = isAdmin;
         AuthToken = token;
     }
+
+    public void ClearSession()
+    {
+        CurrentUsername = "";
+        IsAdmin = false;
+        AuthToken = null;
+    }
 }

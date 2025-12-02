@@ -40,6 +40,13 @@ public class DashboardViewModel : ViewModelBase
     public CurrencyService Currency => _currency;
     public ObservableCollection<CryptoCurrency> CryptoPrices { get; }
 
+    private CryptoCurrency? _selectedCrypto;
+    public CryptoCurrency? SelectedCrypto
+    {
+        get => _selectedCrypto;
+        set => SetProperty(ref _selectedCrypto, value);
+    }
+
     private decimal _totalPortfolioValue;
     public decimal TotalPortfolioValue
     {

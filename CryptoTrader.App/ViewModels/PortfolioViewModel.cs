@@ -124,18 +124,47 @@ public class PortfolioViewModel : ViewModelBase
         OnPropertyChanged(nameof(TotalAssetsFormatted));
     }
 
-    public async Task ExportHoldingsAsync()
+    public async Task ExportHoldingsAsync(string format = "excel")
     {
         IsLoading = true;
         StatusMessage = "";
 
-        var data = await _api.ExportHoldingsToExcelAsync();
-        if (data != null)
+        byte[]? data = null;
+        string extension = ".xlsx";
+
+        try
         {
-            await SaveExportFileAsync(data, "MyHoldings", ".xlsx");
-            StatusMessage = _lang["ExportSuccess"];
+            switch (format.ToLower())
+            {
+                case "excel":
+                    data = await _api.ExportHoldingsToExcelAsync();
+                    extension = ".xlsx";
+                    break;
+                case "xml":
+                    data = await _api.ExportHoldingsToXmlAsync();
+                    extension = ".xml";
+                    break;
+                case "pdf":
+                    data = await _api.ExportPortfolioToPdfAsync();
+                    extension = ".pdf";
+                    break;
+                case "binary":
+                    data = await _api.ExportHoldingsToBinaryAsync();
+                    extension = ".bin";
+                    break;
+            }
+
+            if (data != null)
+            {
+                await SaveExportFileAsync(data, $"MyHoldings_{format}", extension);
+                StatusMessage = _lang["ExportSuccess"];
+            }
+            else
+            {
+                StatusMessage = _lang["Error"];
+            }
         }
-        else
+        catch
         {
             StatusMessage = _lang["Error"];
         }

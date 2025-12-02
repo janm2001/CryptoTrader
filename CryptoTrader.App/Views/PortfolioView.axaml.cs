@@ -52,5 +52,8 @@ public partial class PortfolioView : UserControl
     }
 
     private async void OnRefresh(object? sender, RoutedEventArgs e) => await ViewModel.LoadDataAsync();
-    private async void OnExport(object? sender, RoutedEventArgs e) => await ViewModel.ExportHoldingsAsync();
+    private async void OnExportExcel(object? sender, RoutedEventArgs e) => await ViewModel.ExportHoldingsAsync("excel");
+    private async void OnExportXml(object? sender, RoutedEventArgs e) => await ViewModel.ExportHoldingsAsync("xml");
+    private async void OnExportPdf(object? sender, RoutedEventArgs e) => await ViewModel.ExportHoldingsAsync("pdf");
+    private async void OnExportBinary(object? sender, RoutedEventArgs e) => await ViewModel.ExportHoldingsAsync("binary");
 }

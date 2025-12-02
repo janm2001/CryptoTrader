@@ -15,5 +15,8 @@ public partial class TransactionsView : UserControl
     }
 
     private async void OnRefresh(object? sender, RoutedEventArgs e) => await ViewModel.LoadDataAsync();
-    private async void OnExport(object? sender, RoutedEventArgs e) => await ViewModel.ExportTransactionsAsync();
+    private async void OnExportExcel(object? sender, RoutedEventArgs e) => await ViewModel.ExportTransactionsAsync("excel");
+    private async void OnExportXml(object? sender, RoutedEventArgs e) => await ViewModel.ExportTransactionsAsync("xml");
+    private async void OnExportPdf(object? sender, RoutedEventArgs e) => await ViewModel.ExportTransactionsAsync("pdf");
+    private async void OnExportBinary(object? sender, RoutedEventArgs e) => await ViewModel.ExportTransactionsAsync("binary");
 }

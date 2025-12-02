@@ -15,10 +15,17 @@ public class MainAppViewModel : ViewModelBase
         _lang = LanguageService.Instance;
         CurrentUsername = username;
 
+        // Use shared auth token
+        var token = NavigationService.Instance.AuthToken;
+        if (!string.IsNullOrEmpty(token))
+        {
+            _api.SetAuthToken(token);
+        }
+
         _lang.LanguageChanged += (s, e) => OnPropertyChanged(nameof(L));
 
-        // Check if admin
-        _ = CheckUserRoleAsync();
+        // Check if admin from session
+        CheckUserRole();
     }
 
     public LanguageService L => _lang;
@@ -37,15 +44,24 @@ public class MainAppViewModel : ViewModelBase
         set => SetProperty(ref _isAdmin, value);
     }
 
-    private async Task CheckUserRoleAsync()
+    private void CheckUserRole()
     {
-        var users = await _api.GetAllUsersAsync();
-        var currentUser = users.FirstOrDefault(u => u.Username == CurrentUsername);
-        IsAdmin = currentUser?.Role == "Admin";
+        // Get from current session if available
+        var session = _api.CurrentSession;
+        if (session != null)
+        {
+            IsAdmin = session.IsAdmin;
+        }
+        else
+        {
+            // Fallback to NavigationService
+            IsAdmin = NavigationService.Instance.IsAdmin;
+        }
     }
 
     public async Task LogoutAsync()
     {
         await _api.LogoutAsync();
+        NavigationService.Instance.ClearSession();
     }
 }

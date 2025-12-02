@@ -121,18 +121,47 @@ public class MarketViewModel : ViewModelBase
         IsLoading = false;
     }
 
-    public async Task ExportPricesAsync()
+    public async Task ExportPricesAsync(string format = "excel")
     {
         IsLoading = true;
         StatusMessage = "";
 
-        var data = await _api.ExportPricesToExcelAsync();
-        if (data != null)
+        byte[]? data = null;
+        string extension = ".xlsx";
+
+        try
         {
-            await SaveExportFileAsync(data, "CryptoPrices", ".xlsx");
-            StatusMessage = _lang["ExportSuccess"];
+            switch (format.ToLower())
+            {
+                case "excel":
+                    data = await _api.ExportPricesToExcelAsync();
+                    extension = ".xlsx";
+                    break;
+                case "xml":
+                    data = await _api.ExportPricesToXmlAsync();
+                    extension = ".xml";
+                    break;
+                case "pdf":
+                    data = await _api.ExportMarketToPdfAsync();
+                    extension = ".pdf";
+                    break;
+                case "binary":
+                    data = await _api.ExportPricesToBinaryAsync();
+                    extension = ".bin";
+                    break;
+            }
+
+            if (data != null)
+            {
+                await SaveExportFileAsync(data, $"CryptoPrices_{format}", extension);
+                StatusMessage = _lang["ExportSuccess"];
+            }
+            else
+            {
+                StatusMessage = _lang["Error"];
+            }
         }
-        else
+        catch
         {
             StatusMessage = _lang["Error"];
         }

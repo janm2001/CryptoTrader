@@ -452,6 +452,57 @@ public class ApiClient : IDisposable
         }
     }
 
+    public async Task<byte[]?> ExportPricesToXmlAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("export/prices/xml");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<byte[]?> ExportPricesToBinaryAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("export/prices/binary");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<byte[]?> ExportMarketToPdfAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("export/market/pdf");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public async Task<byte[]?> ExportHoldingsToExcelAsync()
     {
         try
@@ -469,11 +520,113 @@ public class ApiClient : IDisposable
         }
     }
 
+    public async Task<byte[]?> ExportHoldingsToXmlAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("export/holdings/xml");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<byte[]?> ExportHoldingsToBinaryAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("export/holdings/binary");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<byte[]?> ExportPortfolioToPdfAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("export/portfolio/pdf");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public async Task<byte[]?> ExportTransactionsToExcelAsync()
     {
         try
         {
             var response = await _httpClient.GetAsync("export/transactions/excel");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<byte[]?> ExportTransactionsToXmlAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("export/transactions/xml");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<byte[]?> ExportTransactionsToBinaryAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("export/transactions/binary");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<byte[]?> ExportTransactionsToPdfAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("export/transactions/pdf");
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadAsByteArrayAsync();

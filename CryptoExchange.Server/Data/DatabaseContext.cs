@@ -302,7 +302,7 @@ public class DatabaseContext
     {
         using var connection = GetConnection();
         var result = await connection.QueryFirstOrDefaultAsync<dynamic>(@"
-            SELECT s.UserId, u.Username, s.Token, s.ExpiresAt
+            SELECT s.UserId, u.Username, s.Token, s.ExpiresAt, u.Role, u.Balance
             FROM Sessions s
             JOIN Users u ON s.UserId = u.Id
             WHERE s.Token = @Token", new { Token = token });
@@ -321,7 +321,9 @@ public class DatabaseContext
             UserId = (int)(long)result.UserId,
             Username = (string)result.Username,
             Token = (string)result.Token,
-            ExpiresAt = expiresAt
+            ExpiresAt = expiresAt,
+            IsAdmin = ((long)result.Role) == 1,
+            Balance = (decimal)(double)result.Balance
         };
     }
 

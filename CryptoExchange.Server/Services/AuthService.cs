@@ -84,7 +84,9 @@ public class AuthService
                 UserId = user.Id,
                 Username = user.Username,
                 Token = token,
-                ExpiresAt = DateTime.UtcNow.AddHours(_tokenExpirationHours)
+                ExpiresAt = DateTime.UtcNow.AddHours(_tokenExpirationHours),
+                IsAdmin = false,
+                Balance = user.Balance
             }
         };
     }
@@ -129,7 +131,9 @@ public class AuthService
                 UserId = user.Id,
                 Username = user.Username,
                 Token = token,
-                ExpiresAt = DateTime.UtcNow.AddHours(expirationHours)
+                ExpiresAt = DateTime.UtcNow.AddHours(expirationHours),
+                IsAdmin = user.Role == UserRole.Admin,
+                Balance = user.Balance
             }
         };
     }

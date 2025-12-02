@@ -90,7 +90,10 @@
 
                 <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
                     <Button Classes="primary" Content="{Binding L[Refresh]}" Click="OnRefresh" Margin="0,0,10,0"/>
-                    <Button Classes="success" Content="{Binding L[ExportTransactions]}" Click="OnExport"/>
+                    <Button Classes="success" Content="📊 Excel" Click="OnExportExcel" Margin="0,0,10,0"/>
+                    <Button Content="📄 XML" Click="OnExportXml" Margin="0,0,10,0"/>
+                    <Button Content="📑 PDF" Click="OnExportPdf" Margin="0,0,10,0"/>
+                    <Button Content="📦 Binary" Click="OnExportBinary"/>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

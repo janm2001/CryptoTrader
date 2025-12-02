@@ -171,18 +171,47 @@ public class TransactionsViewModel : ViewModelBase
         NewTransactionNotes = "";
     }
 
-    public async Task ExportTransactionsAsync()
+    public async Task ExportTransactionsAsync(string format = "excel")
     {
         IsLoading = true;
         StatusMessage = "";
 
-        var data = await _api.ExportTransactionsToExcelAsync();
-        if (data != null)
+        byte[]? data = null;
+        string extension = ".xlsx";
+
+        try
         {
-            await SaveExportFileAsync(data, "Transactions", ".xlsx");
-            StatusMessage = _lang["ExportSuccess"];
+            switch (format.ToLower())
+            {
+                case "excel":
+                    data = await _api.ExportTransactionsToExcelAsync();
+                    extension = ".xlsx";
+                    break;
+                case "xml":
+                    data = await _api.ExportTransactionsToXmlAsync();
+                    extension = ".xml";
+                    break;
+                case "pdf":
+                    data = await _api.ExportTransactionsToPdfAsync();
+                    extension = ".pdf";
+                    break;
+                case "binary":
+                    data = await _api.ExportTransactionsToBinaryAsync();
+                    extension = ".bin";
+                    break;
+            }
+
+            if (data != null)
+            {
+                await SaveExportFileAsync(data, $"Transactions_{format}", extension);
+                StatusMessage = _lang["ExportSuccess"];
+            }
+            else
+            {
+                StatusMessage = _lang["Error"];
+            }
         }
-        else
+        catch
         {
             StatusMessage = _lang["Error"];
         }

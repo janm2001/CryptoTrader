@@ -501,6 +501,23 @@ public class ExportController : ControllerBase
     #region Binary Export Endpoints
 
     /// <summary>
+    /// Export cryptocurrency prices to binary format (.dat)
+    /// </summary>
+    [HttpGet("prices/binary")]
+    public async Task<IActionResult> ExportPricesToBinary()
+    {
+        var (session, _) = await GetSessionAndRoleAsync();
+        if (session == null)
+        {
+            return Unauthorized(new { message = "Authentication required" });
+        }
+
+        var data = await _binaryExport.ExportPricesToBinaryAsync();
+        var fileName = $"CryptoPrices_{DateTime.UtcNow:yyyyMMdd_HHmmss}.dat";
+        return File(data, "application/octet-stream", fileName);
+    }
+
+    /// <summary>
     /// Export user's portfolio holdings to binary format (.dat)
     /// </summary>
     [HttpGet("holdings/binary")]

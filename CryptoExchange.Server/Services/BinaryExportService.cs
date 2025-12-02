@@ -13,6 +13,7 @@ public class BinaryExportService
     private const string HOLDINGS_MAGIC = "CTHD"; // CryptoTrader Holdings Data
     private const string TRANSACTIONS_MAGIC = "CTTX"; // CryptoTrader Transactions
     private const string PORTFOLIO_MAGIC = "CTPF"; // CryptoTrader Portfolio
+    private const string PRICES_MAGIC = "CTPR"; // CryptoTrader Prices
 
     private readonly DatabaseContext _db;
     private readonly CryptoApiService _cryptoService;
@@ -21,6 +22,41 @@ public class BinaryExportService
     {
         _db = db;
         _cryptoService = cryptoService;
+    }
+
+    /// <summary>
+    /// Exports cryptocurrency prices to binary format
+    /// Format: [MAGIC:4][VERSION:1][TIMESTAMP:8][COUNT:4][PRICES...]
+    /// </summary>
+    public async Task<byte[]> ExportPricesToBinaryAsync()
+    {
+        var prices = await _cryptoService.GetCachedPricesAsync();
+        
+        using var stream = new MemoryStream();
+        using var writer = new BinaryWriter(stream);
+
+        // Write header
+        writer.Write(PRICES_MAGIC.ToCharArray());
+        writer.Write(FILE_VERSION);
+        writer.Write(DateTime.UtcNow.ToBinary());
+        writer.Write(prices.Count);
+
+        // Write each price
+        foreach (var crypto in prices.OrderBy(p => p.MarketCapRank))
+        {
+            WriteString(writer, crypto.CoinId);
+            WriteString(writer, crypto.Name);
+            WriteString(writer, crypto.Symbol);
+            writer.Write(crypto.MarketCapRank);
+            writer.Write((double)crypto.CurrentPrice);
+            writer.Write((double)crypto.PriceChangePercentage24h);
+            writer.Write((double)crypto.MarketCap);
+            writer.Write((double)crypto.TotalVolume);
+            writer.Write((double)crypto.CirculatingSupply);
+            writer.Write(crypto.LastUpdated.ToBinary());
+        }
+
+        return stream.ToArray();
     }
 
     /// <summary>
