@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CryptoTrader.App.Services;
+using Avalonia.Threading;
 
 namespace CryptoTrader.App.ViewModels;
 
@@ -92,13 +93,16 @@ public class AdminViewModel : ViewModelBase
         {
             // Load users
             var users = await _api.GetAllUsersAsync();
-            Users.Clear();
-            if (users != null)
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                foreach (var user in users)
-                    Users.Add(user);
-            }
-            TotalUsers = Users.Count;
+                Users.Clear();
+                if (users != null)
+                {
+                    foreach (var user in users)
+                        Users.Add(user);
+                }
+                TotalUsers = Users.Count;
+            });
 
             // Load stats
             var stats = await _api.GetSystemStatsAsync();

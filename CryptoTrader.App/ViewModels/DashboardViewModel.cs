@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CryptoTrader.Shared.Models;
 using CryptoTrader.App.Services;
 using System.IO;
+using Avalonia.Threading;
 
 namespace CryptoTrader.App.ViewModels;
 
@@ -102,11 +103,14 @@ public class DashboardViewModel : ViewModelBase
             }
 
             var prices = await _api.GetCachedPricesAsync();
-            CryptoPrices.Clear();
-            foreach (var price in prices.OrderBy(p => p.MarketCapRank).Take(10))
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                CryptoPrices.Add(price);
-            }
+                CryptoPrices.Clear();
+                foreach (var price in prices.OrderBy(p => p.MarketCapRank).Take(10))
+                {
+                    CryptoPrices.Add(price);
+                }
+            });
 
             IsConnected = true;
         }

@@ -5,6 +5,7 @@ using CryptoTrader.Shared.Models;
 using CryptoTrader.App.Services;
 using System.IO;
 using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace CryptoTrader.App.ViewModels;
 
@@ -90,11 +91,14 @@ public class PortfolioViewModel : ViewModelBase
         try
         {
             var holdings = await _api.GetHoldingsAsync();
-            Holdings.Clear();
-            foreach (var holding in holdings)
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                Holdings.Add(holding);
-            }
+                Holdings.Clear();
+                foreach (var holding in holdings)
+                {
+                    Holdings.Add(holding);
+                }
+            });
 
             var summary = await _api.GetPortfolioSummaryAsync();
             if (summary != null)

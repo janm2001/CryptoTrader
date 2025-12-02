@@ -7,12 +7,21 @@ namespace CryptoExchange.Server.Services;
 
 /// <summary>
 /// Service for fetching cryptocurrency data from external APIs
+/// Includes rate limiting to respect API quotas
 /// </summary>
 public class CryptoApiService
 {
     private readonly HttpClient _httpClient;
     private readonly DatabaseContext _db;
     private readonly string _baseUrl;
+    
+    // Rate limiting: CoinGecko free tier allows ~10-50 calls/minute
+    private readonly SemaphoreSlim _rateLimitSemaphore = new(1, 1);
+    private DateTime _lastApiCall = DateTime.MinValue;
+    private readonly TimeSpan _minTimeBetweenCalls = TimeSpan.FromMilliseconds(1200); // ~50 calls/minute max
+    private int _callCount = 0;
+    private DateTime _callCountResetTime = DateTime.UtcNow;
+    private const int MaxCallsPerMinute = 45;
 
     public CryptoApiService(DatabaseContext db, string baseUrl = "https://api.coingecko.com/api/v3")
     {
@@ -20,10 +29,67 @@ public class CryptoApiService
         _baseUrl = baseUrl;
         _httpClient = new HttpClient
         {
-            BaseAddress = new Uri(_baseUrl)
+            BaseAddress = new Uri(_baseUrl),
+            Timeout = TimeSpan.FromSeconds(30)
         };
         _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
         _httpClient.DefaultRequestHeaders.Add("User-Agent", "CryptoTrader/1.0");
+    }
+
+    /// <summary>
+    /// Applies rate limiting before making API calls to respect CoinGecko limits
+    /// </summary>
+    private async Task ApplyRateLimitAsync()
+    {
+        await _rateLimitSemaphore.WaitAsync();
+        try
+        {
+            // Reset counter every minute
+            if ((DateTime.UtcNow - _callCountResetTime).TotalMinutes >= 1)
+            {
+                _callCount = 0;
+                _callCountResetTime = DateTime.UtcNow;
+            }
+
+            // If we've exceeded max calls per minute, wait until reset
+            if (_callCount >= MaxCallsPerMinute)
+            {
+                var waitTime = TimeSpan.FromMinutes(1) - (DateTime.UtcNow - _callCountResetTime);
+                if (waitTime > TimeSpan.Zero)
+                {
+                    Console.WriteLine($"[RateLimit] Max calls reached. Waiting {waitTime.TotalSeconds:N1}s...");
+                    await Task.Delay(waitTime);
+                    _callCount = 0;
+                    _callCountResetTime = DateTime.UtcNow;
+                }
+            }
+
+            // Enforce minimum time between calls
+            var timeSinceLastCall = DateTime.UtcNow - _lastApiCall;
+            if (timeSinceLastCall < _minTimeBetweenCalls)
+            {
+                var delay = _minTimeBetweenCalls - timeSinceLastCall;
+                Console.WriteLine($"[RateLimit] Throttling for {delay.TotalMilliseconds:N0}ms");
+                await Task.Delay(delay);
+            }
+
+            _lastApiCall = DateTime.UtcNow;
+            _callCount++;
+        }
+        finally
+        {
+            _rateLimitSemaphore.Release();
+        }
+    }
+
+    /// <summary>
+    /// Gets rate limiting statistics
+    /// </summary>
+    public (int CallsThisMinute, int MaxCallsPerMinute, TimeSpan TimeUntilReset) GetRateLimitStats()
+    {
+        var timeUntilReset = TimeSpan.FromMinutes(1) - (DateTime.UtcNow - _callCountResetTime);
+        if (timeUntilReset < TimeSpan.Zero) timeUntilReset = TimeSpan.Zero;
+        return (_callCount, MaxCallsPerMinute, timeUntilReset);
     }
 
     /// <summary>
@@ -33,6 +99,9 @@ public class CryptoApiService
     {
         try
         {
+            // Apply rate limiting before API call
+            await ApplyRateLimitAsync();
+            
             var url = $"/coins/markets?vs_currency={currency}&order=market_cap_desc&per_page={count}&page=1&sparkline=false";
             var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
@@ -67,6 +136,9 @@ public class CryptoApiService
     {
         try
         {
+            // Apply rate limiting before API call
+            await ApplyRateLimitAsync();
+            
             var ids = string.Join(",", coinIds);
             var url = $"/coins/markets?vs_currency={currency}&ids={ids}&order=market_cap_desc&sparkline=false";
             var response = await _httpClient.GetAsync(url);
@@ -124,6 +196,9 @@ public class CryptoApiService
     {
         try
         {
+            // Apply rate limiting before API call
+            await ApplyRateLimitAsync();
+            
             var ids = string.Join(",", coinIds);
             var url = $"/simple/price?ids={ids}&vs_currencies={currency}";
             var response = await _httpClient.GetAsync(url);
@@ -160,6 +235,9 @@ public class CryptoApiService
     {
         try
         {
+            // Apply rate limiting before API call
+            await ApplyRateLimitAsync();
+            
             var url = $"/search?query={Uri.EscapeDataString(query)}";
             var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
@@ -200,6 +278,9 @@ public class CryptoApiService
     {
         try
         {
+            // Apply rate limiting before API call
+            await ApplyRateLimitAsync();
+            
             var response = await _httpClient.GetAsync("/simple/supported_vs_currencies");
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<List<string>>() ?? new List<string>();

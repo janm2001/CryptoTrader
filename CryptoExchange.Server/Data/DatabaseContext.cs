@@ -50,6 +50,20 @@ public class DatabaseContext
         }
         catch { /* Column already exists */ };
 
+        // Add ProfilePicture BLOB column if it doesn't exist
+        try
+        {
+            connection.Execute("ALTER TABLE Users ADD COLUMN ProfilePicture BLOB");
+        }
+        catch { /* Column already exists */ };
+
+        // Add ProfilePictureType column for MIME type
+        try
+        {
+            connection.Execute("ALTER TABLE Users ADD COLUMN ProfilePictureType TEXT");
+        }
+        catch { /* Column already exists */ };
+
         // Crypto prices cache table
         connection.Execute(@"
             CREATE TABLE IF NOT EXISTS CryptoPrices (
@@ -228,6 +242,42 @@ public class DatabaseContext
         await connection.ExecuteAsync(
             "UPDATE Users SET Balance = Balance + @Amount WHERE Id = @Id",
             new { Id = userId, Amount = amount });
+    }
+
+    /// <summary>
+    /// Saves a profile picture as BLOB data
+    /// </summary>
+    public async Task SaveProfilePictureAsync(int userId, byte[] imageData, string mimeType)
+    {
+        using var connection = GetConnection();
+        await connection.ExecuteAsync(
+            "UPDATE Users SET ProfilePicture = @Data, ProfilePictureType = @MimeType WHERE Id = @Id",
+            new { Id = userId, Data = imageData, MimeType = mimeType });
+    }
+
+    /// <summary>
+    /// Retrieves a user's profile picture BLOB data
+    /// </summary>
+    public async Task<(byte[]? Data, string? MimeType)> GetProfilePictureAsync(int userId)
+    {
+        using var connection = GetConnection();
+        var result = await connection.QueryFirstOrDefaultAsync<dynamic>(
+            "SELECT ProfilePicture, ProfilePictureType FROM Users WHERE Id = @Id",
+            new { Id = userId });
+        
+        if (result == null) return (null, null);
+        return (result.ProfilePicture as byte[], result.ProfilePictureType as string);
+    }
+
+    /// <summary>
+    /// Deletes a user's profile picture
+    /// </summary>
+    public async Task DeleteProfilePictureAsync(int userId)
+    {
+        using var connection = GetConnection();
+        await connection.ExecuteAsync(
+            "UPDATE Users SET ProfilePicture = NULL, ProfilePictureType = NULL WHERE Id = @Id",
+            new { Id = userId });
     }
 
     #endregion

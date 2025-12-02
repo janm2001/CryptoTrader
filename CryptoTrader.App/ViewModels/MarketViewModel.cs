@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CryptoTrader.Shared.Models;
 using CryptoTrader.App.Services;
 using System.IO;
+using Avalonia.Threading;
 
 namespace CryptoTrader.App.ViewModels;
 
@@ -78,11 +79,14 @@ public class MarketViewModel : ViewModelBase
         try
         {
             var prices = await _api.GetCachedPricesAsync();
-            CryptoPrices.Clear();
-            foreach (var price in prices.OrderBy(p => p.MarketCapRank))
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                CryptoPrices.Add(price);
-            }
+                CryptoPrices.Clear();
+                foreach (var price in prices.OrderBy(p => p.MarketCapRank))
+                {
+                    CryptoPrices.Add(price);
+                }
+            });
             IsConnected = true;
         }
         catch
@@ -105,11 +109,14 @@ public class MarketViewModel : ViewModelBase
         IsLoading = true;
 
         var results = await _api.SearchCryptosAsync(SearchQuery);
-        CryptoPrices.Clear();
-        foreach (var crypto in results)
+        await Dispatcher.UIThread.InvokeAsync(() =>
         {
-            CryptoPrices.Add(crypto);
-        }
+            CryptoPrices.Clear();
+            foreach (var crypto in results)
+            {
+                CryptoPrices.Add(crypto);
+            }
+        });
 
         IsLoading = false;
     }

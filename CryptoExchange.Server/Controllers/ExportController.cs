@@ -3,6 +3,8 @@ using ClosedXML.Excel;
 using CryptoTrader.Shared.Models;
 using CryptoExchange.Server.Data;
 using CryptoExchange.Server.Services;
+using System.Xml.Serialization;
+using System.Text;
 
 namespace CryptoExchange.Server.Controllers;
 
@@ -13,12 +15,16 @@ public class ExportController : ControllerBase
     private readonly DatabaseContext _db;
     private readonly AuthService _authService;
     private readonly CryptoApiService _cryptoService;
+    private readonly BinaryExportService _binaryExport;
+    private readonly PdfReportService _pdfService;
 
     public ExportController(DatabaseContext db, AuthService authService, CryptoApiService cryptoService)
     {
         _db = db;
         _authService = authService;
         _cryptoService = cryptoService;
+        _binaryExport = new BinaryExportService(db, cryptoService);
+        _pdfService = new PdfReportService(db, cryptoService);
     }
 
     private async Task<(UserSession? session, bool isAdmin)> GetSessionAndRoleAsync()
@@ -356,6 +362,284 @@ public class ExportController : ControllerBase
         return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
     }
 
+    #region XML Export Endpoints
+
+    /// <summary>
+    /// Export cryptocurrency prices to XML
+    /// </summary>
+    [HttpGet("prices/xml")]
+    public async Task<IActionResult> ExportPricesToXml()
+    {
+        var (session, _) = await GetSessionAndRoleAsync();
+        if (session == null)
+        {
+            return Unauthorized(new { message = "Authentication required" });
+        }
+
+        var prices = await _cryptoService.GetCachedPricesAsync();
+        var exportData = new CryptoPricesExport
+        {
+            ExportDate = DateTime.UtcNow,
+            TotalCount = prices.Count,
+            Prices = prices.OrderBy(p => p.MarketCapRank).ToList()
+        };
+
+        var serializer = new XmlSerializer(typeof(CryptoPricesExport));
+        using var stream = new MemoryStream();
+        using var writer = new StreamWriter(stream, Encoding.UTF8);
+        serializer.Serialize(writer, exportData);
+        
+        var fileName = $"CryptoPrices_{DateTime.UtcNow:yyyyMMdd_HHmmss}.xml";
+        return File(stream.ToArray(), "application/xml", fileName);
+    }
+
+    /// <summary>
+    /// Export user's portfolio holdings to XML
+    /// </summary>
+    [HttpGet("holdings/xml")]
+    public async Task<IActionResult> ExportHoldingsToXml()
+    {
+        var (session, _) = await GetSessionAndRoleAsync();
+        if (session == null)
+        {
+            return Unauthorized(new { message = "Authentication required" });
+        }
+
+        var holdings = (await _db.GetUserHoldingsAsync(session.UserId)).ToList();
+        var coinIds = holdings.Select(h => h.CoinId).Distinct();
+        var prices = await _cryptoService.GetCryptosByIdsAsync(coinIds);
+        var priceDict = prices.ToDictionary(p => p.CoinId, p => p.CurrentPrice);
+
+        decimal totalValue = 0, totalCost = 0;
+        var holdingsWithValues = holdings.Select(h =>
+        {
+            var currentPrice = priceDict.GetValueOrDefault(h.CoinId, 0);
+            var currentValue = h.GetCurrentValue(currentPrice);
+            var profitLoss = h.GetProfitLoss(currentPrice);
+            totalValue += currentValue;
+            totalCost += h.Amount * h.PurchasePrice;
+            return new HoldingExportItem
+            {
+                CoinId = h.CoinId,
+                Symbol = h.Symbol.ToUpper(),
+                Amount = h.Amount,
+                PurchasePrice = h.PurchasePrice,
+                CurrentPrice = currentPrice,
+                CurrentValue = currentValue,
+                ProfitLoss = profitLoss,
+                ProfitLossPercentage = h.GetProfitLossPercentage(currentPrice),
+                PurchaseDate = h.PurchaseDate
+            };
+        }).ToList();
+
+        var exportData = new HoldingsExport
+        {
+            ExportDate = DateTime.UtcNow,
+            UserId = session.UserId,
+            TotalHoldings = holdings.Count,
+            TotalValue = totalValue,
+            TotalCost = totalCost,
+            TotalProfitLoss = totalValue - totalCost,
+            Holdings = holdingsWithValues
+        };
+
+        var serializer = new XmlSerializer(typeof(HoldingsExport));
+        using var stream = new MemoryStream();
+        using var writer = new StreamWriter(stream, Encoding.UTF8);
+        serializer.Serialize(writer, exportData);
+        
+        var fileName = $"MyHoldings_{DateTime.UtcNow:yyyyMMdd_HHmmss}.xml";
+        return File(stream.ToArray(), "application/xml", fileName);
+    }
+
+    /// <summary>
+    /// Export transaction history to XML
+    /// </summary>
+    [HttpGet("transactions/xml")]
+    public async Task<IActionResult> ExportTransactionsToXml()
+    {
+        var (session, _) = await GetSessionAndRoleAsync();
+        if (session == null)
+        {
+            return Unauthorized(new { message = "Authentication required" });
+        }
+
+        var transactions = (await _db.GetUserTransactionsAsync(session.UserId, 1000)).ToList();
+        var exportData = new TransactionsExport
+        {
+            ExportDate = DateTime.UtcNow,
+            UserId = session.UserId,
+            TotalTransactions = transactions.Count,
+            TotalBuyValue = transactions.Where(t => t.Type == TransactionType.Buy).Sum(t => t.TotalValue),
+            TotalSellValue = transactions.Where(t => t.Type == TransactionType.Sell).Sum(t => t.TotalValue),
+            Transactions = transactions.Select(t => new TransactionExportItem
+            {
+                Id = t.Id,
+                Type = t.Type.ToString(),
+                CoinId = t.CoinId,
+                Symbol = t.Symbol.ToUpper(),
+                Amount = t.Amount,
+                PricePerUnit = t.PricePerUnit,
+                TotalValue = t.TotalValue,
+                Fee = t.Fee,
+                Notes = t.Notes ?? "",
+                Timestamp = t.Timestamp
+            }).ToList()
+        };
+
+        var serializer = new XmlSerializer(typeof(TransactionsExport));
+        using var stream = new MemoryStream();
+        using var writer = new StreamWriter(stream, Encoding.UTF8);
+        serializer.Serialize(writer, exportData);
+        
+        var fileName = $"Transactions_{DateTime.UtcNow:yyyyMMdd_HHmmss}.xml";
+        return File(stream.ToArray(), "application/xml", fileName);
+    }
+
+    #endregion
+
+    #region Binary Export Endpoints
+
+    /// <summary>
+    /// Export user's portfolio holdings to binary format (.dat)
+    /// </summary>
+    [HttpGet("holdings/binary")]
+    public async Task<IActionResult> ExportHoldingsToBinary()
+    {
+        var (session, _) = await GetSessionAndRoleAsync();
+        if (session == null)
+        {
+            return Unauthorized(new { message = "Authentication required" });
+        }
+
+        var data = await _binaryExport.ExportHoldingsToBinaryAsync(session.UserId);
+        var fileName = $"Holdings_{DateTime.UtcNow:yyyyMMdd_HHmmss}.dat";
+        return File(data, "application/octet-stream", fileName);
+    }
+
+    /// <summary>
+    /// Export transaction history to binary format (.dat)
+    /// </summary>
+    [HttpGet("transactions/binary")]
+    public async Task<IActionResult> ExportTransactionsToBinary()
+    {
+        var (session, _) = await GetSessionAndRoleAsync();
+        if (session == null)
+        {
+            return Unauthorized(new { message = "Authentication required" });
+        }
+
+        var data = await _binaryExport.ExportTransactionsToBinaryAsync(session.UserId);
+        var fileName = $"Transactions_{DateTime.UtcNow:yyyyMMdd_HHmmss}.dat";
+        return File(data, "application/octet-stream", fileName);
+    }
+
+    /// <summary>
+    /// Export complete portfolio (balance + holdings + current values) to binary format (.dat)
+    /// </summary>
+    [HttpGet("portfolio/binary")]
+    public async Task<IActionResult> ExportPortfolioToBinary()
+    {
+        var (session, _) = await GetSessionAndRoleAsync();
+        if (session == null)
+        {
+            return Unauthorized(new { message = "Authentication required" });
+        }
+
+        var data = await _binaryExport.ExportPortfolioToBinaryAsync(session.UserId);
+        var fileName = $"Portfolio_{DateTime.UtcNow:yyyyMMdd_HHmmss}.dat";
+        return File(data, "application/octet-stream", fileName);
+    }
+
+    /// <summary>
+    /// Import holdings from binary file (validates format only, does not save)
+    /// </summary>
+    [HttpPost("holdings/binary/validate")]
+    public async Task<IActionResult> ValidateHoldingsBinary([FromBody] byte[] data)
+    {
+        var (session, _) = await GetSessionAndRoleAsync();
+        if (session == null)
+        {
+            return Unauthorized(new { message = "Authentication required" });
+        }
+
+        try
+        {
+            var holdings = _binaryExport.ImportHoldingsFromBinary(data);
+            return Ok(new { 
+                Success = true, 
+                Message = $"Valid binary file with {holdings.Count} holdings",
+                Count = holdings.Count
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Success = false, Message = ex.Message });
+        }
+    }
+
+    #endregion
+
+    #region PDF Export Endpoints
+
+    /// <summary>
+    /// Generate portfolio report as PDF
+    /// </summary>
+    [HttpGet("portfolio/pdf")]
+    public async Task<IActionResult> ExportPortfolioToPdf()
+    {
+        var (session, _) = await GetSessionAndRoleAsync();
+        if (session == null)
+        {
+            return Unauthorized(new { message = "Authentication required" });
+        }
+
+        var user = await _db.GetUserByIdAsync(session.UserId);
+        var pdfData = await _pdfService.GeneratePortfolioReportAsync(session.UserId, user?.Username ?? "Unknown");
+        
+        var fileName = $"PortfolioReport_{DateTime.UtcNow:yyyyMMdd_HHmmss}.pdf";
+        return File(pdfData, "application/pdf", fileName);
+    }
+
+    /// <summary>
+    /// Generate transaction history report as PDF
+    /// </summary>
+    [HttpGet("transactions/pdf")]
+    public async Task<IActionResult> ExportTransactionsToPdf([FromQuery] int limit = 100)
+    {
+        var (session, _) = await GetSessionAndRoleAsync();
+        if (session == null)
+        {
+            return Unauthorized(new { message = "Authentication required" });
+        }
+
+        var user = await _db.GetUserByIdAsync(session.UserId);
+        var pdfData = await _pdfService.GenerateTransactionsReportAsync(session.UserId, user?.Username ?? "Unknown", limit);
+        
+        var fileName = $"TransactionReport_{DateTime.UtcNow:yyyyMMdd_HHmmss}.pdf";
+        return File(pdfData, "application/pdf", fileName);
+    }
+
+    /// <summary>
+    /// Generate market overview report as PDF
+    /// </summary>
+    [HttpGet("market/pdf")]
+    public async Task<IActionResult> ExportMarketToPdf([FromQuery] int top = 50)
+    {
+        var (session, _) = await GetSessionAndRoleAsync();
+        if (session == null)
+        {
+            return Unauthorized(new { message = "Authentication required" });
+        }
+
+        var pdfData = await _pdfService.GenerateMarketReportAsync(top);
+        
+        var fileName = $"MarketReport_{DateTime.UtcNow:yyyyMMdd_HHmmss}.pdf";
+        return File(pdfData, "application/pdf", fileName);
+    }
+
+    #endregion
+
     private void AddUsersToSheet(IXLWorksheet sheet, IEnumerable<User> users)
     {
         var headers = new[] { "ID", "Username", "Email", "Role", "Active", "Created At" };
@@ -411,3 +695,133 @@ public class ExportController : ControllerBase
         sheet.Columns().AdjustToContents();
     }
 }
+
+#region XML Export Models
+
+[XmlRoot("CryptoPricesExport")]
+public class CryptoPricesExport
+{
+    [XmlAttribute("exportDate")]
+    public DateTime ExportDate { get; set; }
+    
+    [XmlAttribute("totalCount")]
+    public int TotalCount { get; set; }
+    
+    [XmlArray("Prices")]
+    [XmlArrayItem("Crypto")]
+    public List<CryptoCurrency> Prices { get; set; } = new();
+}
+
+[XmlRoot("HoldingsExport")]
+public class HoldingsExport
+{
+    [XmlAttribute("exportDate")]
+    public DateTime ExportDate { get; set; }
+    
+    [XmlAttribute("userId")]
+    public int UserId { get; set; }
+    
+    [XmlElement("TotalHoldings")]
+    public int TotalHoldings { get; set; }
+    
+    [XmlElement("TotalValue")]
+    public decimal TotalValue { get; set; }
+    
+    [XmlElement("TotalCost")]
+    public decimal TotalCost { get; set; }
+    
+    [XmlElement("TotalProfitLoss")]
+    public decimal TotalProfitLoss { get; set; }
+    
+    [XmlArray("Holdings")]
+    [XmlArrayItem("Holding")]
+    public List<HoldingExportItem> Holdings { get; set; } = new();
+}
+
+public class HoldingExportItem
+{
+    [XmlElement("CoinId")]
+    public string CoinId { get; set; } = "";
+    
+    [XmlElement("Symbol")]
+    public string Symbol { get; set; } = "";
+    
+    [XmlElement("Amount")]
+    public decimal Amount { get; set; }
+    
+    [XmlElement("PurchasePrice")]
+    public decimal PurchasePrice { get; set; }
+    
+    [XmlElement("CurrentPrice")]
+    public decimal CurrentPrice { get; set; }
+    
+    [XmlElement("CurrentValue")]
+    public decimal CurrentValue { get; set; }
+    
+    [XmlElement("ProfitLoss")]
+    public decimal ProfitLoss { get; set; }
+    
+    [XmlElement("ProfitLossPercentage")]
+    public decimal ProfitLossPercentage { get; set; }
+    
+    [XmlElement("PurchaseDate")]
+    public DateTime PurchaseDate { get; set; }
+}
+
+[XmlRoot("TransactionsExport")]
+public class TransactionsExport
+{
+    [XmlAttribute("exportDate")]
+    public DateTime ExportDate { get; set; }
+    
+    [XmlAttribute("userId")]
+    public int UserId { get; set; }
+    
+    [XmlElement("TotalTransactions")]
+    public int TotalTransactions { get; set; }
+    
+    [XmlElement("TotalBuyValue")]
+    public decimal TotalBuyValue { get; set; }
+    
+    [XmlElement("TotalSellValue")]
+    public decimal TotalSellValue { get; set; }
+    
+    [XmlArray("Transactions")]
+    [XmlArrayItem("Transaction")]
+    public List<TransactionExportItem> Transactions { get; set; } = new();
+}
+
+public class TransactionExportItem
+{
+    [XmlAttribute("id")]
+    public int Id { get; set; }
+    
+    [XmlElement("Type")]
+    public string Type { get; set; } = "";
+    
+    [XmlElement("CoinId")]
+    public string CoinId { get; set; } = "";
+    
+    [XmlElement("Symbol")]
+    public string Symbol { get; set; } = "";
+    
+    [XmlElement("Amount")]
+    public decimal Amount { get; set; }
+    
+    [XmlElement("PricePerUnit")]
+    public decimal PricePerUnit { get; set; }
+    
+    [XmlElement("TotalValue")]
+    public decimal TotalValue { get; set; }
+    
+    [XmlElement("Fee")]
+    public decimal Fee { get; set; }
+    
+    [XmlElement("Notes")]
+    public string Notes { get; set; } = "";
+    
+    [XmlElement("Timestamp")]
+    public DateTime Timestamp { get; set; }
+}
+
+#endregion

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CryptoTrader.Shared.Models;
 using CryptoTrader.App.Services;
 using System.IO;
+using Avalonia.Threading;
 
 namespace CryptoTrader.App.ViewModels;
 
@@ -105,11 +106,14 @@ public class TransactionsViewModel : ViewModelBase
         try
         {
             var transactions = await _api.GetTransactionsAsync();
-            Transactions.Clear();
-            foreach (var tx in transactions)
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                Transactions.Add(tx);
-            }
+                Transactions.Clear();
+                foreach (var tx in transactions)
+                {
+                    Transactions.Add(tx);
+                }
+            });
         }
         catch
         {
