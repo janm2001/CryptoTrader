@@ -39,7 +39,37 @@ public partial class BuyWindow : Window
         ApplyTranslations();
         Loaded += async (s, e) => await LoadDataAsync();
     }
-    
+
+
+    public BuyWindow(CryptoCurrency cryptoCurrency)
+    {
+        InitializeComponent();
+        _api = new ApiClient();
+        _lang = LanguageService.Instance;
+        _currency = CurrencyService.Instance;
+        _selectedCrypto = cryptoCurrency;
+
+        //set selected crypto in the select
+        CryptoComboBox.SelectedItem = new CryptoOption
+        {
+            CoinId = cryptoCurrency.CoinId,
+            Symbol = cryptoCurrency.Symbol,
+            Name = cryptoCurrency.Name,
+            CurrentPrice = cryptoCurrency.CurrentPrice
+        };
+        
+        // Use shared auth token
+        var token = NavigationService.Instance.AuthToken;
+        if (!string.IsNullOrEmpty(token))
+        {
+            _api.SetAuthToken(token);
+        }
+        
+        ApplyTranslations();
+        Loaded += async (s, e) => await LoadDataAsync();
+    }
+
+
     private void ApplyTranslations()
     {
         Title = _lang["BuyCrypto"];

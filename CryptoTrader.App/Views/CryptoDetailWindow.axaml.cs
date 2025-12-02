@@ -288,7 +288,7 @@ public partial class CryptoDetailWindow : Window
 
     private async void OnBuyClick(object? sender, RoutedEventArgs e)
     {
-        var buyWindow = new BuyWindow();
+        var buyWindow = new BuyWindow(cryptoCurrency: _crypto);
         await buyWindow.ShowDialog(this);
     }
 
