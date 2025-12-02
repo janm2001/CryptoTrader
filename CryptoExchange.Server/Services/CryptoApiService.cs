@@ -228,21 +228,32 @@ public class CryptoApiService
         }
     }
 
-    /// <summary>
+     /// <summary>
     /// Searches for cryptocurrencies by name or symbol
     /// </summary>
     public async Task<List<CryptoCurrency>> SearchCryptosAsync(string query)
     {
+        // Handle empty query
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            Console.WriteLine("[Search] Empty query, returning empty list");
+            return new List<CryptoCurrency>();
+        }
+
         try
         {
             // Apply rate limiting before API call
             await ApplyRateLimitAsync();
             
             var url = $"/search?query={Uri.EscapeDataString(query)}";
+            Console.WriteLine($"[Search] Calling API: {url}");
+            
             var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"[Search] Response: {json.Substring(0, Math.Min(500, json.Length))}...");
+            
             var searchResult = JsonSerializer.Deserialize<JsonElement>(json);
 
             var coinIds = new List<string>();
@@ -252,21 +263,47 @@ public class CryptoApiService
                 {
                     if (coin.TryGetProperty("id", out var id))
                     {
-                        coinIds.Add(id.GetString() ?? "");
+                        var coinId = id.GetString();
+                        if (!string.IsNullOrEmpty(coinId))
+                        {
+                            coinIds.Add(coinId);
+                            Console.WriteLine($"[Search] Found coin ID: {coinId}");
+                        }
                     }
                 }
+            }
+            else
+            {
+                Console.WriteLine("[Search] No 'coins' property found in response");
             }
 
             if (coinIds.Count > 0)
             {
+                Console.WriteLine($"[Search] Fetching details for {coinIds.Count} coins");
                 return await GetCryptosByIdsAsync(coinIds);
             }
 
+            Console.WriteLine("[Search] No coin IDs found, returning empty list");
             return new List<CryptoCurrency>();
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[Search] HTTP Error: {ex.Message}");
+            
+            // Try to search in cached data instead
+            var cached = await _db.GetAllPricesAsync();
+            var queryLower = query.ToLowerInvariant();
+            return cached
+                .Where(c => c.Name.ToLowerInvariant().Contains(queryLower) || 
+                           c.Symbol.ToLowerInvariant().Contains(queryLower) ||
+                           c.CoinId.ToLowerInvariant().Contains(queryLower))
+                .Take(10)
+                .ToList();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error searching cryptos: {ex.Message}");
+            Console.WriteLine($"[Search] Error: {ex.Message}");
+            Console.WriteLine($"[Search] Stack trace: {ex.StackTrace}");
             return new List<CryptoCurrency>();
         }
     }
