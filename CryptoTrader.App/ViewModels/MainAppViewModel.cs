@@ -1,5 +1,8 @@
+using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using CryptoTrader.App.Services;
 
 namespace CryptoTrader.App.ViewModels;
@@ -26,6 +29,9 @@ public class MainAppViewModel : ViewModelBase
 
         // Check if admin from session
         CheckUserRole();
+        
+        // Load profile picture
+        _ = LoadProfilePictureAsync();
     }
 
     public LanguageService L => _lang;
@@ -44,6 +50,19 @@ public class MainAppViewModel : ViewModelBase
         set => SetProperty(ref _isAdmin, value);
     }
 
+    private Bitmap? _profilePicture;
+    public Bitmap? ProfilePicture
+    {
+        get => _profilePicture;
+        set
+        {
+            SetProperty(ref _profilePicture, value);
+            OnPropertyChanged(nameof(HasProfilePicture));
+        }
+    }
+
+    public bool HasProfilePicture => _profilePicture != null;
+
     private void CheckUserRole()
     {
         // Get from current session if available
@@ -56,6 +75,23 @@ public class MainAppViewModel : ViewModelBase
         {
             // Fallback to NavigationService
             IsAdmin = NavigationService.Instance.IsAdmin;
+        }
+    }
+
+    public async Task LoadProfilePictureAsync()
+    {
+        try
+        {
+            var imageData = await _api.GetProfilePictureAsync();
+            if (imageData != null && imageData.Length > 0)
+            {
+                using var stream = new MemoryStream(imageData);
+                ProfilePicture = new Bitmap(stream);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load profile picture: {ex.Message}");
         }
     }
 

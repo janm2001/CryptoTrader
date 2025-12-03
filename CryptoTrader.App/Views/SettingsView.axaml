@@ -6,6 +6,47 @@
 
     <ScrollViewer>
         <StackPanel Margin="20" Spacing="20">
+            <!-- Profile Picture Settings -->
+            <Border Background="#2D2D2D" CornerRadius="10" Padding="20">
+                <StackPanel Spacing="15">
+                    <TextBlock Text="{Binding L[ProfilePicture]}" FontWeight="Bold" FontSize="16" Foreground="#E0E0E0"/>
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <!-- Current Profile Picture -->
+                        <Border Width="100" Height="100" CornerRadius="50" 
+                                Background="#3d3d5a" ClipToBounds="True">
+                            <Panel>
+                                <TextBlock Text="👤" FontSize="40" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           IsVisible="{Binding !HasProfilePicture}"/>
+                                <Image Source="{Binding ProfilePicture}" 
+                                       Stretch="UniformToFill"
+                                       IsVisible="{Binding HasProfilePicture}"/>
+                            </Panel>
+                        </Border>
+                        
+                        <!-- Upload/Remove Buttons -->
+                        <StackPanel Spacing="10" VerticalAlignment="Center">
+                            <Button Content="{Binding L[UploadPicture]}"
+                                    Background="#5B8DEE"
+                                    Foreground="White"
+                                    Padding="20,10"
+                                    CornerRadius="5"
+                                    Click="OnUploadPictureClick"/>
+                            <Button Content="{Binding L[RemovePicture]}"
+                                    Background="#6B6B6B"
+                                    Foreground="White"
+                                    Padding="20,10"
+                                    CornerRadius="5"
+                                    Click="OnRemovePictureClick"
+                                    IsVisible="{Binding HasProfilePicture}"/>
+                            <TextBlock Text="{Binding ProfilePictureStatus}" 
+                                       Foreground="#808090" FontSize="12"
+                                       IsVisible="{Binding HasProfilePictureStatus}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
             <!-- Language Settings -->
             <Border Background="#2D2D2D" CornerRadius="10" Padding="20">
                 <StackPanel Spacing="10">
@@ -42,6 +83,8 @@
                         <RadioButton GroupName="Currency" Content="EUR (€)"
                                      IsChecked="{Binding IsEurCurrency, Mode=TwoWay}"/>
                     </StackPanel>
+                    <TextBlock Text="{Binding ExchangeRateInfo}" 
+                               Foreground="#808090" FontSize="12" Margin="0,5,0,0"/>
                 </StackPanel>
             </Border>
 

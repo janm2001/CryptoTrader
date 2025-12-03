@@ -658,10 +658,85 @@ public class ApiClient : IDisposable
 
     #endregion
 
+    #region Profile Picture
+
+    public async Task<bool> UploadProfilePictureAsync(byte[] imageData, string mimeType)
+    {
+        try
+        {
+            var base64Data = Convert.ToBase64String(imageData);
+            var request = new { Data = base64Data, MimeType = mimeType };
+            var response = await _httpClient.PostAsJsonAsync("user/profile-picture/base64", request);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<byte[]?> GetProfilePictureAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("user/profile-picture");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsByteArrayAsync();
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<bool> DeleteProfilePictureAsync()
+    {
+        try
+        {
+            var response = await _httpClient.DeleteAsync("user/profile-picture");
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> HasProfilePictureAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("user/profile-picture/exists");
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ProfilePictureStatus>();
+                return result?.HasPicture ?? false;
+            }
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    #endregion
+
     public void Dispose()
     {
         _httpClient.Dispose();
     }
+}
+
+public class ProfilePictureStatus
+{
+    public bool Success { get; set; }
+    public bool HasPicture { get; set; }
+    public string? MimeType { get; set; }
+    public int Size { get; set; }
 }
 
 // Additional models for API responses

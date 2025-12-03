@@ -39,14 +39,31 @@
         <Border Grid.Column="0" Background="#16162a">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Margin="20">
-                    <TextBlock Text="₿ CryptoTrader" 
-                               FontSize="22" 
-                               FontWeight="Bold"
-                               Foreground="#6c5ce7"/>
-                    <TextBlock Text="{Binding CurrentUsername}" 
-                               FontSize="12" 
-                               Foreground="#808090"
-                               Margin="0,5,0,0"/>
+                    <!-- Profile Picture and Username -->
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Border Width="50" Height="50" CornerRadius="25" 
+                                Background="#3d3d5a" ClipToBounds="True">
+                            <Panel>
+                                <!-- Default avatar icon -->
+                                <TextBlock Text="👤" FontSize="24" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           IsVisible="{Binding !HasProfilePicture}"/>
+                                <!-- Profile picture -->
+                                <Image x:Name="ProfileImage" Source="{Binding ProfilePicture}"
+                                       Stretch="UniformToFill"
+                                       IsVisible="{Binding HasProfilePicture}"/>
+                            </Panel>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="₿ CryptoTrader" 
+                                       FontSize="18" 
+                                       FontWeight="Bold"
+                                       Foreground="#6c5ce7"/>
+                            <TextBlock Text="{Binding CurrentUsername}" 
+                                       FontSize="12" 
+                                       Foreground="#808090"/>
+                        </StackPanel>
+                    </StackPanel>
                 </StackPanel>
 
                 <StackPanel DockPanel.Dock="Top" Margin="0,10,0,0">

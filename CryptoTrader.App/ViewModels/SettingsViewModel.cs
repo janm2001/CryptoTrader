@@ -1,4 +1,7 @@
+using System;
+using System.IO;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using CryptoTrader.App.Services;
 
 namespace CryptoTrader.App.ViewModels;
@@ -17,13 +20,128 @@ public class SettingsViewModel : ViewModelBase
         _settings = SettingsService.Instance;
         _api = new ApiClient();
 
+        // Use shared auth token
+        var token = NavigationService.Instance.AuthToken;
+        if (!string.IsNullOrEmpty(token))
+        {
+            _api.SetAuthToken(token);
+        }
+
         _lang.LanguageChanged += (s, e) => OnPropertyChanged(nameof(L));
+        _currency.CurrencyChanged += (s, e) => OnPropertyChanged(nameof(ExchangeRateInfo));
 
         // Load current settings to UI
         LoadSettings();
+        
+        // Load profile picture
+        _ = LoadProfilePictureAsync();
     }
 
     public LanguageService L => _lang;
+
+    #region Profile Picture
+
+    private Bitmap? _profilePicture;
+    public Bitmap? ProfilePicture
+    {
+        get => _profilePicture;
+        set
+        {
+            SetProperty(ref _profilePicture, value);
+            OnPropertyChanged(nameof(HasProfilePicture));
+        }
+    }
+
+    public bool HasProfilePicture => _profilePicture != null;
+
+    private string _profilePictureStatus = "";
+    public string ProfilePictureStatus
+    {
+        get => _profilePictureStatus;
+        set { SetProperty(ref _profilePictureStatus, value); OnPropertyChanged(nameof(HasProfilePictureStatus)); }
+    }
+    public bool HasProfilePictureStatus => !string.IsNullOrEmpty(ProfilePictureStatus);
+
+    public async Task LoadProfilePictureAsync()
+    {
+        try
+        {
+            var imageData = await _api.GetProfilePictureAsync();
+            if (imageData != null && imageData.Length > 0)
+            {
+                using var stream = new MemoryStream(imageData);
+                ProfilePicture = new Bitmap(stream);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load profile picture: {ex.Message}");
+        }
+    }
+
+    public async Task UploadProfilePictureAsync(byte[] imageData, string mimeType)
+    {
+        IsLoading = true;
+        ProfilePictureStatus = "";
+
+        try
+        {
+            var success = await _api.UploadProfilePictureAsync(imageData, mimeType);
+            if (success)
+            {
+                // Reload the picture
+                using var stream = new MemoryStream(imageData);
+                ProfilePicture = new Bitmap(stream);
+                ProfilePictureStatus = _lang["ImageUploaded"];
+            }
+            else
+            {
+                ProfilePictureStatus = _lang["Error"];
+            }
+        }
+        catch (Exception ex)
+        {
+            ProfilePictureStatus = $"Error: {ex.Message}";
+        }
+
+        IsLoading = false;
+    }
+
+    public async Task RemoveProfilePictureAsync()
+    {
+        IsLoading = true;
+        ProfilePictureStatus = "";
+
+        try
+        {
+            var success = await _api.DeleteProfilePictureAsync();
+            if (success)
+            {
+                ProfilePicture = null;
+                ProfilePictureStatus = _lang["ImageRemoved"];
+            }
+            else
+            {
+                ProfilePictureStatus = _lang["Error"];
+            }
+        }
+        catch (Exception ex)
+        {
+            ProfilePictureStatus = $"Error: {ex.Message}";
+        }
+
+        IsLoading = false;
+    }
+
+    public void SetProfilePictureStatus(string status, bool isSuccess)
+    {
+        ProfilePictureStatus = status;
+        IsSuccess = isSuccess;
+    }
+
+    #endregion
+
+    #region Language Settings
 
     private string _selectedLanguage = "en";
     public string SelectedLanguage
@@ -49,6 +167,10 @@ public class SettingsViewModel : ViewModelBase
         set { if (value) SelectedLanguage = "hr"; }
     }
 
+    #endregion
+
+    #region Theme Settings
+
     private string _selectedTheme = "Dark";
     public string SelectedTheme
     {
@@ -68,6 +190,10 @@ public class SettingsViewModel : ViewModelBase
         set { if (value) SelectedTheme = "Light"; }
     }
 
+    #endregion
+
+    #region Currency Settings
+
     private string _selectedCurrency = "USD";
     public string SelectedCurrency
     {
@@ -86,6 +212,12 @@ public class SettingsViewModel : ViewModelBase
         get => SelectedCurrency == "EUR";
         set { if (value) SelectedCurrency = "EUR"; }
     }
+
+    public string ExchangeRateInfo => _currency.GetExchangeRateInfo();
+
+    #endregion
+
+    #region Server Settings
 
     private string _serverAddress = "localhost";
     public string ServerAddress
@@ -108,6 +240,10 @@ public class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _autoConnect, value);
     }
 
+    #endregion
+
+    #region Notification Settings
+
     private bool _priceAlertsEnabled = true;
     public bool PriceAlertsEnabled
     {
@@ -121,6 +257,10 @@ public class SettingsViewModel : ViewModelBase
         get => _soundEnabled;
         set => SetProperty(ref _soundEnabled, value);
     }
+
+    #endregion
+
+    #region Status
 
     private bool _isLoading;
     public bool IsLoading
@@ -143,6 +283,8 @@ public class SettingsViewModel : ViewModelBase
         get => _isSuccess;
         set => SetProperty(ref _isSuccess, value);
     }
+
+    #endregion
 
     public void LoadSettings()
     {
@@ -176,11 +318,17 @@ public class SettingsViewModel : ViewModelBase
 
         _lang.CurrentLanguage = SelectedLanguage;
         _currency.CurrentCurrency = SelectedCurrency;
+        
+        // Refresh exchange rates when currency changes
+        await _currency.RefreshExchangeRatesAsync();
+        
         _api.UpdateBaseAddress();
 
         IsLoading = false;
         IsSuccess = true;
         StatusMessage = _lang["SettingsSaved"];
+        
+        OnPropertyChanged(nameof(ExchangeRateInfo));
     }
 
     public async Task ResetSettingsAsync()
