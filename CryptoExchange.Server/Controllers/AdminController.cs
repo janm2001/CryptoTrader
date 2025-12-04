@@ -169,26 +169,18 @@ public class AdminController : ControllerBase
 
         var users = (await _db.GetAllUsersAsync()).ToList();
         var prices = (await _db.GetAllPricesAsync()).ToList();
+        var holdings = (await _db.GetAllHoldingsAsync()).ToList();
+        var transactions = (await _db.GetAllTransactionsAsync()).ToList();
 
+        // Return flat structure matching SystemStats model in client
         return Ok(new
         {
-            Users = new
-            {
-                Total = users.Count,
-                Admins = users.Count(u => u.Role == UserRole.Admin),
-                Active = users.Count(u => u.IsActive),
-                Inactive = users.Count(u => !u.IsActive)
-            },
-            Crypto = new
-            {
-                TrackedCoins = prices.Count,
-                LastUpdate = prices.FirstOrDefault()?.LastUpdated
-            },
-            Server = new
-            {
-                Uptime = DateTime.UtcNow.ToString("O"),
-                Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"
-            }
+            TotalUsers = users.Count,
+            ActiveUsers = users.Count(u => u.IsActive),
+            AdminUsers = users.Count(u => u.Role == UserRole.Admin),
+            TotalHoldings = holdings.Count,
+            TotalTransactions = transactions.Count,
+            TrackedCryptos = prices.Count
         });
     }
 

@@ -193,6 +193,20 @@ public class DatabaseContext
         return await connection.QueryAsync<User>("SELECT * FROM Users ORDER BY CreatedAt DESC");
     }
 
+    public async Task<IEnumerable<CryptoTransaction>> GetAllTransactionsAsync()
+    {
+        using var connection = GetConnection();
+        var entities = await connection.QueryAsync<TransactionEntity>("SELECT * FROM Transactions ORDER BY Timestamp DESC");
+        return entities.Select(e => e.ToModel());
+    }
+
+    public async Task<IEnumerable<CryptoHolding>> GetAllHoldingsAsync()
+    {
+        using var connection = GetConnection();
+        var entities = await connection.QueryAsync<HoldingEntity>("SELECT * FROM Holdings");
+        return entities.Select(e => e.ToModel());
+    }
+
     public async Task UpdateUserRoleAsync(int userId, UserRole role)
     {
         using var connection = GetConnection();
@@ -406,24 +420,26 @@ public class DatabaseContext
     {
         using var connection = GetConnection();
         var cutoffDate = DateTime.UtcNow.AddDays(-days).ToString("O");
-        return await connection.QueryAsync<CryptoPriceHistory>(@"
+        var entities = await connection.QueryAsync<PriceHistoryEntity>(@"
             SELECT Id, CoinId, Price, MarketCap, Volume, Timestamp
             FROM PriceHistory 
             WHERE CoinId = @CoinId AND Timestamp >= @CutoffDate
             ORDER BY Timestamp ASC",
             new { CoinId = coinId, CutoffDate = cutoffDate });
+        return entities.Select(e => e.ToModel());
     }
 
     public async Task<IEnumerable<CryptoPriceHistory>> GetLatestPriceHistoryAsync(string coinId, int limit = 100)
     {
         using var connection = GetConnection();
-        return await connection.QueryAsync<CryptoPriceHistory>(@"
+        var entities = await connection.QueryAsync<PriceHistoryEntity>(@"
             SELECT Id, CoinId, Price, MarketCap, Volume, Timestamp
             FROM PriceHistory 
             WHERE CoinId = @CoinId
             ORDER BY Timestamp DESC
             LIMIT @Limit",
             new { CoinId = coinId, Limit = limit });
+        return entities.Select(e => e.ToModel());
     }
 
     #endregion
@@ -433,8 +449,9 @@ public class DatabaseContext
     public async Task<IEnumerable<CryptoHolding>> GetUserHoldingsAsync(int userId)
     {
         using var connection = GetConnection();
-        return await connection.QueryAsync<CryptoHolding>(
+        var entities = await connection.QueryAsync<HoldingEntity>(
             "SELECT * FROM Holdings WHERE UserId = @UserId", new { UserId = userId });
+        return entities.Select(e => e.ToModel());
     }
 
     public async Task<int> AddHoldingAsync(CryptoHolding holding)
@@ -479,9 +496,10 @@ public class DatabaseContext
     public async Task<IEnumerable<CryptoTransaction>> GetUserTransactionsAsync(int userId, int limit = 100)
     {
         using var connection = GetConnection();
-        return await connection.QueryAsync<CryptoTransaction>(
+        var entities = await connection.QueryAsync<TransactionEntity>(
             "SELECT * FROM Transactions WHERE UserId = @UserId ORDER BY Timestamp DESC LIMIT @Limit",
             new { UserId = userId, Limit = limit });
+        return entities.Select(e => e.ToModel());
     }
 
     public async Task<int> AddTransactionAsync(CryptoTransaction transaction)
