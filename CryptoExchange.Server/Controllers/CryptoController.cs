@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using CryptoTrader.Shared.Models;
 using CryptoExchange.Server.Services;
+using CryptoExchange.Server.Data;
 
 namespace CryptoExchange.Server.Controllers;
 
@@ -10,11 +11,13 @@ public class CryptoController : ControllerBase
 {
     private readonly CryptoApiService _cryptoService;
     private readonly PriceUpdateService _priceUpdateService;
+    private readonly DatabaseContext _db;
 
-    public CryptoController(CryptoApiService cryptoService, PriceUpdateService priceUpdateService)
+    public CryptoController(CryptoApiService cryptoService, PriceUpdateService priceUpdateService, DatabaseContext db)
     {
         _cryptoService = cryptoService;
         _priceUpdateService = priceUpdateService;
+        _db = db;
     }
 
     /// <summary>
@@ -121,5 +124,29 @@ public class CryptoController : ControllerBase
     {
         var currencies = await _cryptoService.GetSupportedCurrenciesAsync();
         return Ok(currencies);
+    }
+
+    /// <summary>
+    /// Gets price history for a specific cryptocurrency
+    /// </summary>
+    [HttpGet("{coinId}/history")]
+    public async Task<ActionResult<IEnumerable<CryptoPriceHistory>>> GetPriceHistory(
+        string coinId,
+        [FromQuery] int days = 30)
+    {
+        var history = await _db.GetPriceHistoryAsync(coinId, days);
+        return Ok(history);
+    }
+
+    /// <summary>
+    /// Gets the latest price history entries for a cryptocurrency
+    /// </summary>
+    [HttpGet("{coinId}/history/latest")]
+    public async Task<ActionResult<IEnumerable<CryptoPriceHistory>>> GetLatestPriceHistory(
+        string coinId,
+        [FromQuery] int limit = 100)
+    {
+        var history = await _db.GetLatestPriceHistoryAsync(coinId, limit);
+        return Ok(history);
     }
 }

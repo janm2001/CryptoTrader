@@ -8,6 +8,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using CryptoTrader.App.Models;
 using CryptoTrader.App.Services;
 using CryptoTrader.Shared.Models;
 
@@ -76,8 +77,8 @@ public partial class CryptoDetailWindow : Window
             // Load coin image
             await LoadCoinImageAsync();
 
-            // Generate simulated price history (since we don't have historical API yet)
-            GenerateSimulatedPriceHistory();
+            // Try to load real price history from database, fall back to simulated if none exists
+            await LoadPriceHistoryAsync();
 
             // Draw chart
             DrawChart();
@@ -86,6 +87,53 @@ public partial class CryptoDetailWindow : Window
         {
             Console.WriteLine($"Error loading crypto details: {ex.Message}");
         }
+    }
+
+    private async Task LoadPriceHistoryAsync()
+    {
+        try
+        {
+            // Try to get real price history from the database
+            var history = await _api.GetPriceHistoryAsync(_crypto.CoinId, 30);
+
+            if (history.Count > 0)
+            {
+                // Use real data
+                _priceHistory = history.Select(h => new PricePoint
+                {
+                    Time = h.Timestamp,
+                    Price = h.Price
+                }).OrderBy(p => p.Time).ToList();
+
+                Console.WriteLine($"Loaded {_priceHistory.Count} real price history points for {_crypto.CoinId}");
+            }
+            else
+            {
+                // No historical data yet, generate simulated data
+                Console.WriteLine($"No price history found for {_crypto.CoinId}, using simulated data");
+                GenerateSimulatedPriceHistory();
+            }
+
+            // Update the list display
+            UpdatePriceHistoryDisplay();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading price history: {ex.Message}, using simulated data");
+            GenerateSimulatedPriceHistory();
+            UpdatePriceHistoryDisplay();
+        }
+    }
+
+    private void UpdatePriceHistoryDisplay()
+    {
+        var displayItems = _priceHistory.Select(p => new PriceDisplayItem
+        {
+            TimeText = p.Time.ToString("MM/dd HH:mm"),
+            PriceText = _currency.Format(p.Price)
+        }).Reverse().ToList();
+
+        PriceHistoryList.ItemsSource = displayItems;
     }
 
     private async Task LoadCoinImageAsync()
@@ -135,15 +183,6 @@ public partial class CryptoDetailWindow : Window
 
         // Sort by time
         _priceHistory = _priceHistory.OrderBy(p => p.Time).ToList();
-
-        // Update the list display
-        var displayItems = _priceHistory.Select(p => new PriceDisplayItem
-        {
-            TimeText = p.Time.ToString("HH:mm"),
-            PriceText = _currency.Format(p.Price)
-        }).Reverse().ToList();
-
-        PriceHistoryList.ItemsSource = displayItems;
     }
 
     private void DrawChart()
@@ -296,16 +335,4 @@ public partial class CryptoDetailWindow : Window
     {
         Close();
     }
-}
-
-public class PricePoint
-{
-    public DateTime Time { get; set; }
-    public decimal Price { get; set; }
-}
-
-public class PriceDisplayItem
-{
-    public string TimeText { get; set; } = "";
-    public string PriceText { get; set; } = "";
 }

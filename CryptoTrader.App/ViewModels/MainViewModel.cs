@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Linq;
 using CryptoTrader.Shared.Models;
+using CryptoTrader.App.Models;
 using CryptoTrader.App.Services;
 using System.IO;
 

@@ -402,6 +402,30 @@ public class DatabaseContext
             new { CoinId = coinId, Price = price, MarketCap = marketCap, Volume = volume, Timestamp = DateTime.UtcNow.ToString("O") });
     }
 
+    public async Task<IEnumerable<CryptoPriceHistory>> GetPriceHistoryAsync(string coinId, int days = 30)
+    {
+        using var connection = GetConnection();
+        var cutoffDate = DateTime.UtcNow.AddDays(-days).ToString("O");
+        return await connection.QueryAsync<CryptoPriceHistory>(@"
+            SELECT Id, CoinId, Price, MarketCap, Volume, Timestamp
+            FROM PriceHistory 
+            WHERE CoinId = @CoinId AND Timestamp >= @CutoffDate
+            ORDER BY Timestamp ASC",
+            new { CoinId = coinId, CutoffDate = cutoffDate });
+    }
+
+    public async Task<IEnumerable<CryptoPriceHistory>> GetLatestPriceHistoryAsync(string coinId, int limit = 100)
+    {
+        using var connection = GetConnection();
+        return await connection.QueryAsync<CryptoPriceHistory>(@"
+            SELECT Id, CoinId, Price, MarketCap, Volume, Timestamp
+            FROM PriceHistory 
+            WHERE CoinId = @CoinId
+            ORDER BY Timestamp DESC
+            LIMIT @Limit",
+            new { CoinId = coinId, Limit = limit });
+    }
+
     #endregion
 
     #region Holdings Operations

@@ -28,7 +28,7 @@ builder.Services.AddSingleton(tcpServer);
 var udpServer = new UdpServerService(config.UdpPort);
 builder.Services.AddSingleton(udpServer);
 
-var priceUpdateService = new PriceUpdateService(cryptoApiService, tcpServer, udpServer, config.PriceUpdateIntervalMs);
+var priceUpdateService = new PriceUpdateService(cryptoApiService, tcpServer, udpServer, db, config.PriceUpdateIntervalMs);
 builder.Services.AddSingleton(priceUpdateService);
 
 // Add controllers

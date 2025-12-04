@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using CryptoTrader.App.Models;
 using CryptoTrader.App.Services;
 using Avalonia.Threading;
 

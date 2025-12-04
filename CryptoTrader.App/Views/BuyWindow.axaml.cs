@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using CryptoTrader.App.Models;
 using CryptoTrader.App.Services;
 using CryptoTrader.Shared.Models;
 

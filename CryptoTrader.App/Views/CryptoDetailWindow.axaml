@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="using:CryptoTrader.App.Views"
+        xmlns:models="using:CryptoTrader.App.Models"
         x:Class="CryptoTrader.App.Views.CryptoDetailWindow"
         Title="Crypto Details"
         Width="900" Height="600"
@@ -90,7 +91,7 @@
                     <ScrollViewer>
                         <ItemsControl x:Name="PriceHistoryList">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="views:PriceDisplayItem">
+                                <DataTemplate x:DataType="models:PriceDisplayItem">
                                     <Border Background="#2d2d4a" CornerRadius="5" Padding="10" Margin="0,0,0,5">
                                         <Grid>
                                             <Grid.ColumnDefinitions>

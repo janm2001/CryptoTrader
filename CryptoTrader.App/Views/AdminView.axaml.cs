@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using CryptoTrader.App.Models;
 using CryptoTrader.App.ViewModels;
 using CryptoTrader.App.Services;
 

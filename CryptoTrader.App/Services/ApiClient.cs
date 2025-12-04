@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using CryptoTrader.Shared.Models;
 using CryptoTrader.Shared.Config;
+using CryptoTrader.App.Models;
 
 namespace CryptoTrader.App.Services;
 
@@ -209,6 +210,32 @@ public class ApiClient : IDisposable
         catch
         {
             return new List<CryptoCurrency>();
+        }
+    }
+
+    public async Task<List<CryptoPriceHistory>> GetPriceHistoryAsync(string coinId, int days = 30)
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<List<CryptoPriceHistory>>($"crypto/{coinId}/history?days={days}")
+                ?? new List<CryptoPriceHistory>();
+        }
+        catch
+        {
+            return new List<CryptoPriceHistory>();
+        }
+    }
+
+    public async Task<List<CryptoPriceHistory>> GetLatestPriceHistoryAsync(string coinId, int limit = 100)
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<List<CryptoPriceHistory>>($"crypto/{coinId}/history/latest?limit={limit}")
+                ?? new List<CryptoPriceHistory>();
+        }
+        catch
+        {
+            return new List<CryptoPriceHistory>();
         }
     }
 
@@ -729,86 +756,4 @@ public class ApiClient : IDisposable
     {
         _httpClient.Dispose();
     }
-}
-
-public class ProfilePictureStatus
-{
-    public bool Success { get; set; }
-    public bool HasPicture { get; set; }
-    public string? MimeType { get; set; }
-    public int Size { get; set; }
-}
-
-// Additional models for API responses
-public class PortfolioSummary
-{
-    public decimal TotalValue { get; set; }
-    public decimal TotalCost { get; set; }
-    public decimal TotalProfitLoss { get; set; }
-    public decimal TotalProfitLossPercentage { get; set; }
-    public int HoldingsCount { get; set; }
-    public decimal Balance { get; set; }
-    public List<HoldingDetail>? Holdings { get; set; }
-}
-
-public class HoldingDetail
-{
-    public string CoinId { get; set; } = "";
-    public string Symbol { get; set; } = "";
-    public decimal Amount { get; set; }
-    public decimal PurchasePrice { get; set; }
-    public decimal CurrentPrice { get; set; }
-    public decimal CurrentValue { get; set; }
-    public decimal ProfitLoss { get; set; }
-    public decimal ProfitLossPercentage { get; set; }
-}
-
-public class UserInfo
-{
-    public int Id { get; set; }
-    public string Username { get; set; } = "";
-    public string Email { get; set; } = "";
-    public string Role { get; set; } = "";
-    public bool IsActive { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? LastLoginAt { get; set; }
-}
-
-public class SystemStats
-{
-    public int TotalUsers { get; set; }
-    public int ActiveUsers { get; set; }
-    public int AdminUsers { get; set; }
-    public int TotalHoldings { get; set; }
-    public int TotalTransactions { get; set; }
-    public int TrackedCryptos { get; set; }
-}
-
-public class BalanceResponse
-{
-    public decimal Balance { get; set; }
-}
-
-public class BuyResult
-{
-    public bool Success { get; set; }
-    public string? Message { get; set; }
-    public decimal Balance { get; set; }
-}
-
-public class SellResult
-{
-    public bool Success { get; set; }
-    public string? Message { get; set; }
-    public decimal Balance { get; set; }
-}
-
-public class CryptoOption
-{
-    public string CoinId { get; set; } = "";
-    public string Symbol { get; set; } = "";
-    public string Name { get; set; } = "";
-    public decimal CurrentPrice { get; set; }
-    
-    public override string ToString() => $"{Name} ({Symbol.ToUpper()}) - ${CurrentPrice:N2}";
 }
