@@ -14,6 +14,7 @@ public class CryptoApiService
     private readonly HttpClient _httpClient;
     private readonly DatabaseContext _db;
     private readonly string _baseUrl;
+    private readonly string? _apiKey;
     
     // Rate limiting: CoinGecko free tier allows ~10-50 calls/minute
     private readonly SemaphoreSlim _rateLimitSemaphore = new(1, 1);
@@ -21,12 +22,13 @@ public class CryptoApiService
     private readonly TimeSpan _minTimeBetweenCalls = TimeSpan.FromMilliseconds(1200); // ~50 calls/minute max
     private int _callCount = 0;
     private DateTime _callCountResetTime = DateTime.UtcNow;
-    private const int MaxCallsPerMinute = 45;
+    private const int MaxCallsPerMinute = 30; // Demo API has lower limits
 
-    public CryptoApiService(DatabaseContext db, string baseUrl = "https://api.coingecko.com/api/v3")
+    public CryptoApiService(DatabaseContext db, string baseUrl = "https://api.coingecko.com/api/v3", string? apiKey = null)
     {
         _db = db;
         _baseUrl = baseUrl;
+        _apiKey = apiKey;
         _httpClient = new HttpClient
         {
             BaseAddress = new Uri(_baseUrl),
@@ -34,6 +36,18 @@ public class CryptoApiService
         };
         _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
         _httpClient.DefaultRequestHeaders.Add("User-Agent", "CryptoTrader/1.0");
+        
+        // Add Demo API key header if provided
+        if (!string.IsNullOrEmpty(_apiKey))
+        {
+            _httpClient.DefaultRequestHeaders.Add("x-cg-demo-api-key", _apiKey);
+            Console.WriteLine("[CryptoAPI] Using CoinGecko Demo API key");
+        }
+        else
+        {
+            Console.WriteLine("[CryptoAPI] WARNING: No CoinGecko API key configured. API calls may fail.");
+            Console.WriteLine("[CryptoAPI] Get a free Demo API key at: https://www.coingecko.com/en/api/pricing");
+        }
     }
 
     /// <summary>
@@ -103,25 +117,61 @@ public class CryptoApiService
             await ApplyRateLimitAsync();
             
             var url = $"/coins/markets?vs_currency={currency}&order=market_cap_desc&per_page={count}&page=1&sparkline=false";
+            Console.WriteLine($"[CryptoAPI] Fetching prices from: {_baseUrl}{url}");
+            
             var response = await _httpClient.GetAsync(url);
-            response.EnsureSuccessStatusCode();
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[CryptoAPI] API Error: {response.StatusCode} - {errorContent}");
+                
+                // Return cached data on API error
+                var cached = await _db.GetAllPricesAsync();
+                Console.WriteLine($"[CryptoAPI] Returning {cached.Count()} cached prices due to API error");
+                return cached.Take(count).ToList();
+            }
 
             var cryptos = await response.Content.ReadFromJsonAsync<List<CryptoCurrency>>();
             
-            if (cryptos != null)
+            if (cryptos != null && cryptos.Count > 0)
             {
+                Console.WriteLine($"[CryptoAPI] Successfully fetched {cryptos.Count} cryptocurrencies");
+                
                 // Save to database
                 foreach (var crypto in cryptos)
                 {
                     await _db.UpsertPriceAsync(crypto);
                 }
+                
+                Console.WriteLine($"[CryptoAPI] Updated database with {cryptos.Count} prices");
+            }
+            else
+            {
+                Console.WriteLine("[CryptoAPI] Warning: API returned empty or null response");
             }
 
             return cryptos ?? new List<CryptoCurrency>();
         }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"[CryptoAPI] HTTP Error: {ex.Message}");
+            
+            // Return cached data from database
+            var cached = await _db.GetAllPricesAsync();
+            Console.WriteLine($"[CryptoAPI] Returning {cached.Count()} cached prices");
+            return cached.Take(count).ToList();
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.WriteLine($"[CryptoAPI] Request timeout: {ex.Message}");
+            
+            var cached = await _db.GetAllPricesAsync();
+            return cached.Take(count).ToList();
+        }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error fetching crypto data: {ex.Message}");
+            Console.WriteLine($"[CryptoAPI] Unexpected error: {ex.GetType().Name} - {ex.Message}");
             
             // Return cached data from database
             var cached = await _db.GetAllPricesAsync();

@@ -149,4 +149,62 @@ public class CryptoController : ControllerBase
         var history = await _db.GetLatestPriceHistoryAsync(coinId, limit);
         return Ok(history);
     }
+
+    /// <summary>
+    /// Gets diagnostic info about price data freshness
+    /// </summary>
+    [HttpGet("diagnostics")]
+    public async Task<ActionResult> GetDiagnostics()
+    {
+        var cachedPrices = await _db.GetAllPricesAsync();
+        var priceList = cachedPrices.ToList();
+        
+        var rateLimitStats = _cryptoService.GetRateLimitStats();
+        var lastPrices = _priceUpdateService.GetLastPrices();
+        
+        var oldestUpdate = priceList.Any() ? priceList.Min(p => p.LastUpdated) : DateTime.MinValue;
+        var newestUpdate = priceList.Any() ? priceList.Max(p => p.LastUpdated) : DateTime.MinValue;
+        
+        return Ok(new
+        {
+            ServerTime = DateTime.UtcNow,
+            CachedPricesCount = priceList.Count,
+            OldestPriceUpdate = oldestUpdate,
+            NewestPriceUpdate = newestUpdate,
+            DataAgeMinutes = newestUpdate != DateTime.MinValue ? (DateTime.UtcNow - newestUpdate).TotalMinutes : -1,
+            LastServicePricesCount = lastPrices.Count,
+            RateLimit = new
+            {
+                CallsThisMinute = rateLimitStats.CallsThisMinute,
+                MaxCallsPerMinute = rateLimitStats.MaxCallsPerMinute,
+                TimeUntilResetSeconds = rateLimitStats.TimeUntilReset.TotalSeconds
+            },
+            SamplePrices = priceList.Take(3).Select(p => new
+            {
+                p.CoinId,
+                p.Name,
+                p.CurrentPrice,
+                p.LastUpdated,
+                AgeMinutes = (DateTime.UtcNow - p.LastUpdated).TotalMinutes
+            })
+        });
+    }
+
+    /// <summary>
+    /// Forces a refresh of prices from the external API
+    /// </summary>
+    [HttpPost("refresh")]
+    public async Task<ActionResult<List<CryptoCurrency>>> ForceRefresh([FromQuery] int count = 50)
+    {
+        var cryptos = await _cryptoService.GetTopCryptosAsync(count, "usd");
+        return Ok(new
+        {
+            Success = cryptos.Count > 0,
+            Count = cryptos.Count,
+            Message = cryptos.Count > 0 
+                ? $"Successfully refreshed {cryptos.Count} prices" 
+                : "Failed to refresh prices - check server logs",
+            Prices = cryptos
+        });
+    }
 }

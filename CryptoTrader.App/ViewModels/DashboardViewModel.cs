@@ -125,7 +125,8 @@ public class DashboardViewModel : ViewModelBase, IDisposable
                 TotalProfitLossPercentage = summary.TotalProfitLossPercentage;
             }
 
-            var prices = await _api.GetCachedPricesAsync();
+            // Use GetTopCryptosAsync to get fresh data from API (not just cached)
+            var prices = await _api.GetTopCryptosAsync(10);
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 CryptoPrices.Clear();
@@ -133,14 +134,17 @@ public class DashboardViewModel : ViewModelBase, IDisposable
                 {
                     CryptoPrices.Add(price);
                 }
+                
+                // Update last refresh time
+                LastUpdateTime = DateTime.Now.ToString("HH:mm:ss");
             });
 
             IsConnected = true;
         }
-        catch
+        catch (Exception ex)
         {
             IsConnected = false;
-            StatusMessage = _lang["ConnectionError"];
+            StatusMessage = $"{_lang["ConnectionError"]}: {ex.Message}";
         }
 
         IsLoading = false;

@@ -19,7 +19,7 @@ await seeder.SeedAsync();
 var authService = new AuthService(db, config.TokenExpirationHours);
 builder.Services.AddSingleton(authService);
 
-var cryptoApiService = new CryptoApiService(db, config.CryptoApiBaseUrl);
+var cryptoApiService = new CryptoApiService(db, config.CryptoApiBaseUrl, config.CoinGeckoApiKey);
 builder.Services.AddSingleton(cryptoApiService);
 
 var tcpServer = new TcpServerService(config.TcpPort, db, authService, cryptoApiService);
