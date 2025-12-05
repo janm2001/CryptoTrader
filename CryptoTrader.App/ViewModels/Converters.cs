@@ -27,6 +27,46 @@ public class PriceChangeColorConverter : IMultiValueConverter
 }
 
 /// <summary>
+/// Converter for boolean to color (connected = green, disconnected = red)
+/// </summary>
+public class BoolToColorConverter : IValueConverter
+{
+    public static readonly BoolToColorConverter Instance = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        var isTrue = value is bool b && b;
+        var trueColor = "#00b894";  // Green
+        var falseColor = "#ff6b6b"; // Red
+
+        // Allow custom colors via parameter (format: "trueColor|falseColor")
+        if (parameter is string paramStr && paramStr.Contains('|'))
+        {
+            var colors = paramStr.Split('|');
+            if (colors.Length == 2)
+            {
+                trueColor = colors[0];
+                falseColor = colors[1];
+            }
+        }
+
+        var colorStr = isTrue ? trueColor : falseColor;
+        
+        if (targetType == typeof(IBrush) || targetType == typeof(ISolidColorBrush))
+        {
+            return new SolidColorBrush(Color.Parse(colorStr));
+        }
+        
+        return Color.Parse(colorStr);
+    }
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
 /// Converter for currency formatting based on user settings
 /// </summary>
 public class CurrencyConverter : IValueConverter

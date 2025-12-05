@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,15 +10,20 @@ using Avalonia.Threading;
 
 namespace CryptoTrader.App.ViewModels;
 
-public class MarketViewModel : ViewModelBase
+public class MarketViewModel : ViewModelBase, IDisposable
 {
     private readonly ApiClient _api;
     private readonly LanguageService _lang;
+    private readonly RealTimeService _realTime;
+    private readonly SettingsService _settings;
+    private List<CryptoCurrency> _allPrices = new();
 
     public MarketViewModel()
     {
         _api = new ApiClient();
         _lang = LanguageService.Instance;
+        _realTime = RealTimeService.Instance;
+        _settings = SettingsService.Instance;
         CryptoPrices = new ObservableCollection<CryptoCurrency>();
 
         // Use shared auth token
@@ -29,7 +35,21 @@ public class MarketViewModel : ViewModelBase
 
         _lang.LanguageChanged += (s, e) => OnPropertyChanged(nameof(L));
 
+        // Subscribe to real-time price updates
+        _realTime.OnPricesUpdated += OnRealTimePricesUpdated;
+        _realTime.OnConnectionStatusChanged += OnConnectionStatusChanged;
+
         _ = LoadDataAsync();
+
+        // Connect to real-time if not already connected
+        if (!_realTime.IsConnected && _settings.AutoConnect)
+        {
+            _ = ConnectRealTimeAsync();
+        }
+        else
+        {
+            IsRealTimeConnected = _realTime.IsConnected;
+        }
     }
 
     public LanguageService L => _lang;
@@ -167,6 +187,88 @@ public class MarketViewModel : ViewModelBase
         }
 
         IsLoading = false;
+    }
+
+    private async Task ConnectRealTimeAsync()
+    {
+        try
+        {
+            await _realTime.ConnectTcpAsync(
+                _settings.ServerAddress,
+                _settings.ServerTcpPort,
+                NavigationService.Instance.AuthToken
+            );
+
+            await _realTime.ConnectUdpAsync(
+                _settings.ServerAddress,
+                _settings.ServerUdpPort
+            );
+
+            IsRealTimeConnected = true;
+            RealTimeStatus = _lang["Connected"];
+        }
+        catch
+        {
+            IsRealTimeConnected = false;
+            RealTimeStatus = _lang["Disconnected"];
+        }
+    }
+
+    private void OnRealTimePricesUpdated(object? sender, List<CryptoCurrency> prices)
+    {
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            foreach (var newPrice in prices)
+            {
+                var existing = CryptoPrices.FirstOrDefault(p => p.CoinId == newPrice.CoinId);
+                if (existing != null)
+                {
+                    var index = CryptoPrices.IndexOf(existing);
+                    existing.CurrentPrice = newPrice.CurrentPrice;
+                    existing.PriceChangePercentage24h = newPrice.PriceChangePercentage24h;
+                    existing.MarketCap = newPrice.MarketCap;
+                    existing.TotalVolume = newPrice.TotalVolume;
+                    CryptoPrices[index] = existing;
+                }
+            }
+            LastUpdateTime = DateTime.Now.ToString("HH:mm:ss");
+        });
+    }
+
+    private void OnConnectionStatusChanged(object? sender, string status)
+    {
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            RealTimeStatus = status;
+            IsRealTimeConnected = _realTime.IsConnected;
+        });
+    }
+
+    private bool _isRealTimeConnected;
+    public bool IsRealTimeConnected
+    {
+        get => _isRealTimeConnected;
+        set => SetProperty(ref _isRealTimeConnected, value);
+    }
+
+    private string _realTimeStatus = "Disconnected";
+    public string RealTimeStatus
+    {
+        get => _realTimeStatus;
+        set => SetProperty(ref _realTimeStatus, value);
+    }
+
+    private string _lastUpdateTime = "-";
+    public string LastUpdateTime
+    {
+        get => _lastUpdateTime;
+        set => SetProperty(ref _lastUpdateTime, value);
+    }
+
+    public void Dispose()
+    {
+        _realTime.OnPricesUpdated -= OnRealTimePricesUpdated;
+        _realTime.OnConnectionStatusChanged -= OnConnectionStatusChanged;
     }
 
     private async Task SaveExportFileAsync(byte[] data, string baseName, string extension)

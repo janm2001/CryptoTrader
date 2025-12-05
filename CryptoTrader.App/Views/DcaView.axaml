@@ -1,0 +1,212 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:CryptoTrader.App.ViewModels"
+             x:Class="CryptoTrader.App.Views.DcaView"
+             x:DataType="vm:DcaViewModel">
+
+    <Grid ColumnDefinitions="*,350">
+        <!-- Left: Plans List -->
+        <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*">
+            <!-- Summary Stats -->
+            <Border Grid.Row="0" Background="#2D2D2D" CornerRadius="10" Padding="20" Margin="20,20,10,10">
+                <Grid ColumnDefinitions="*,*,*">
+                    <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding L[TotalPlans]}" Foreground="#888" FontSize="12"/>
+                        <TextBlock Text="{Binding TotalPlans}" FontSize="24" FontWeight="Bold" Foreground="#5B8DEE"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding L[ActivePlans]}" Foreground="#888" FontSize="12"/>
+                        <TextBlock Text="{Binding ActivePlans}" FontSize="24" FontWeight="Bold" Foreground="#4ECB71"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding L[TotalInvested]}" Foreground="#888" FontSize="12"/>
+                        <TextBlock Text="{Binding TotalInvested}" FontSize="24" FontWeight="Bold" Foreground="#F0B90B"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Header -->
+            <Grid Grid.Row="1" Margin="20,10,10,5">
+                <TextBlock Text="{Binding L[DCAPlans]}" FontSize="18" FontWeight="Bold" Foreground="#E0E0E0"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                    <Button Content="{Binding L[ExportJSON]}" Background="#5B8DEE" Foreground="White"
+                            Padding="10,5" CornerRadius="5" Click="OnExportJsonClick" FontSize="11"/>
+                    <Button Content="{Binding L[ExportXML]}" Background="#F0B90B" Foreground="Black"
+                            Padding="10,5" CornerRadius="5" Click="OnExportXmlClick" FontSize="11"/>
+                    <Button Content="{Binding L[Import]}" Background="#4ECB71" Foreground="White"
+                            Padding="10,5" CornerRadius="5" Click="OnImportClick" FontSize="11"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Plans List -->
+            <ScrollViewer Grid.Row="2" Margin="20,5,10,20">
+                <ItemsControl ItemsSource="{Binding Plans}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#2D2D2D" CornerRadius="8" Padding="15" Margin="0,5">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <!-- Status Indicator -->
+                                    <Ellipse Grid.Column="0" Width="12" Height="12" 
+                                             Fill="{Binding StatusColor}" 
+                                             VerticalAlignment="Center" Margin="0,0,15,0"/>
+                                    
+                                    <!-- Plan Info -->
+                                    <StackPanel Grid.Column="1">
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" Foreground="#E0E0E0"/>
+                                            <Border Background="#3D3D5C" CornerRadius="3" Padding="5,2">
+                                                <TextBlock Text="{Binding Symbol}" FontSize="11" Foreground="#5B8DEE"/>
+                                            </Border>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,5,0,0">
+                                            <TextBlock Foreground="#888" FontSize="12">
+                                                <Run Text="{Binding Amount}"/>
+                                                <Run Text=" / "/>
+                                                <Run Text="{Binding Frequency}"/>
+                                            </TextBlock>
+                                            <TextBlock Foreground="#888" FontSize="12">
+                                                <Run Text="Next: "/>
+                                                <Run Text="{Binding NextExecution}" Foreground="#4ECB71"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,5,0,0">
+                                            <TextBlock Foreground="#888" FontSize="11">
+                                                <Run Text="Invested: "/>
+                                                <Run Text="{Binding TotalInvested}" Foreground="#F0B90B"/>
+                                            </TextBlock>
+                                            <TextBlock Foreground="#888" FontSize="11">
+                                                <Run Text="Bought: "/>
+                                                <Run Text="{Binding TotalCoinsBought}" Foreground="#E0E0E0"/>
+                                            </TextBlock>
+                                            <TextBlock Foreground="#888" FontSize="11">
+                                                <Run Text="Executions: "/>
+                                                <Run Text="{Binding ExecutionCount}" Foreground="#E0E0E0"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Actions -->
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <Button Content="✎" Background="#5B8DEE" Foreground="White"
+                                                Width="32" Height="32" CornerRadius="5"
+                                                Tag="{Binding}" Click="OnEditClick"
+                                                ToolTip.Tip="{Binding $parent[UserControl].((vm:DcaViewModel)DataContext).L[Edit]}"/>
+                                        <Button Content="⏸" Background="#F0B90B" Foreground="Black"
+                                                Width="32" Height="32" CornerRadius="5"
+                                                Tag="{Binding}" Click="OnToggleActiveClick"
+                                                ToolTip.Tip="{Binding $parent[UserControl].((vm:DcaViewModel)DataContext).L[ToggleActive]}"/>
+                                        <Button Content="✕" Background="#FF6B6B" Foreground="White"
+                                                Width="32" Height="32" CornerRadius="5"
+                                                Tag="{Binding}" Click="OnDeleteClick"
+                                                ToolTip.Tip="{Binding $parent[UserControl].((vm:DcaViewModel)DataContext).L[Delete]}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- Loading Overlay -->
+            <Border Grid.Row="0" Grid.RowSpan="3" Background="#80000000" 
+                    IsVisible="{Binding IsLoading}" CornerRadius="10">
+                <TextBlock Text="{Binding L[Loading]}" FontSize="18" Foreground="White"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+        </Grid>
+
+        <!-- Right: Create/Edit Form -->
+        <Border Grid.Column="1" Background="#2D2D2D" CornerRadius="10" Margin="10,20,20,20">
+            <ScrollViewer>
+                <StackPanel Margin="20">
+                    <!-- Form Title -->
+                    <TextBlock Text="{Binding FormTitle}" FontSize="18" FontWeight="Bold" 
+                               Foreground="#E0E0E0" Margin="0,0,0,20"/>
+
+                    <!-- Plan Name -->
+                    <TextBlock Text="{Binding L[PlanName]}" Foreground="#888" Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding PlanName}" Background="#1E1E2E" Foreground="White"
+                             BorderBrush="#3D3D5C" Padding="10" Margin="0,0,0,15"/>
+
+                    <!-- Crypto Selection -->
+                    <TextBlock Text="{Binding L[SelectCrypto]}" Foreground="#888" Margin="0,0,0,5"/>
+                    <ComboBox ItemsSource="{Binding AvailableCryptos}" 
+                              SelectedItem="{Binding SelectedCrypto}"
+                              Background="#1E1E2E" Foreground="White"
+                              HorizontalAlignment="Stretch" Margin="0,0,0,15">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <TextBlock Text="{Binding Symbol}" FontWeight="Bold" Foreground="#5B8DEE"/>
+                                    <TextBlock Text="{Binding Name}" Foreground="#E0E0E0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <!-- Amount -->
+                    <TextBlock Text="{Binding L[Amount]}" Foreground="#888" Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding Amount}" Background="#1E1E2E" Foreground="White"
+                             BorderBrush="#3D3D5C" Padding="10" Margin="0,0,0,15"
+                             Watermark="100.00"/>
+
+                    <!-- Frequency -->
+                    <TextBlock Text="{Binding L[Frequency]}" Foreground="#888" Margin="0,0,0,5"/>
+                    <ComboBox ItemsSource="{Binding Frequencies}" 
+                              SelectedIndex="{Binding SelectedFrequencyIndex}"
+                              Background="#1E1E2E" Foreground="White"
+                              HorizontalAlignment="Stretch" Margin="0,0,0,15"/>
+
+                    <!-- Day of Week (for Weekly/BiWeekly) -->
+                    <StackPanel IsVisible="{Binding ShowDayOfWeek}" Margin="0,0,0,15">
+                        <TextBlock Text="{Binding L[DayOfWeek]}" Foreground="#888" Margin="0,0,0,5"/>
+                        <ComboBox ItemsSource="{Binding DaysOfWeek}" 
+                                  SelectedIndex="{Binding SelectedDayOfWeekIndex}"
+                                  Background="#1E1E2E" Foreground="White"
+                                  HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+
+                    <!-- Day of Month (for Monthly) -->
+                    <StackPanel IsVisible="{Binding ShowDayOfMonth}" Margin="0,0,0,15">
+                        <TextBlock Text="{Binding L[DayOfMonth]}" Foreground="#888" Margin="0,0,0,5"/>
+                        <NumericUpDown Value="{Binding DayOfMonth}" Minimum="1" Maximum="28"
+                                       Background="#1E1E2E" Foreground="White"
+                                       HorizontalAlignment="Stretch"/>
+                    </StackPanel>
+
+                    <!-- Buttons -->
+                    <Grid ColumnDefinitions="*,*" Margin="0,10,0,0">
+                        <Button Grid.Column="0" Content="{Binding L[Cancel]}" 
+                                Background="#3D3D5C" Foreground="White"
+                                Padding="15,10" CornerRadius="5" Margin="0,0,5,0"
+                                Click="OnCancelClick" HorizontalAlignment="Stretch"/>
+                        <Button Grid.Column="1" Content="{Binding L[Save]}" 
+                                Background="#4ECB71" Foreground="White"
+                                Padding="15,10" CornerRadius="5" Margin="5,0,0,0"
+                                Click="OnSaveClick" HorizontalAlignment="Stretch"/>
+                    </Grid>
+
+                    <!-- Status Message -->
+                    <TextBlock Text="{Binding StatusMessage}" 
+                               IsVisible="{Binding HasStatusMessage}"
+                               Margin="0,15,0,0" TextWrapping="Wrap"
+                               HorizontalAlignment="Center">
+                        <TextBlock.Styles>
+                            <Style Selector="TextBlock">
+                                <Setter Property="Foreground" Value="#FF6B6B"/>
+                            </Style>
+                        </TextBlock.Styles>
+                    </TextBlock>
+
+                    <!-- Info Section -->
+                    <Border Background="#1E1E2E" CornerRadius="8" Padding="15" Margin="0,20,0,0">
+                        <StackPanel>
+                            <TextBlock Text="{Binding L[DCAInfo]}" FontWeight="Bold" Foreground="#5B8DEE" Margin="0,0,0,10"/>
+                            <TextBlock Text="{Binding L[DCADescription]}" Foreground="#888" TextWrapping="Wrap" FontSize="12"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

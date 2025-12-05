@@ -63,6 +63,9 @@ public partial class MainAppWindow : Window
             case "Transactions":
                 ContentArea.Content = new TransactionsView();
                 break;
+            case "DCA":
+                ContentArea.Content = new DcaView();
+                break;
             case "Settings":
                 ContentArea.Content = new SettingsView();
                 break;
@@ -100,6 +103,13 @@ public partial class MainAppWindow : Window
         UpdateNavSelection("Transactions");
     }
 
+    private void NavigateToDCA(object? sender, RoutedEventArgs e)
+    {
+        ContentArea.Content = new DcaView();
+        _currentView = "DCA";
+        UpdateNavSelection("DCA");
+    }
+
     private void NavigateToSettings(object? sender, RoutedEventArgs e)
     {
         ContentArea.Content = new SettingsView();
@@ -121,6 +131,7 @@ public partial class MainAppWindow : Window
         NavPortfolio.Classes.Remove("active");
         NavMarket.Classes.Remove("active");
         NavTransactions.Classes.Remove("active");
+        NavDCA.Classes.Remove("active");
         NavSettings.Classes.Remove("active");
         NavAdmin.Classes.Remove("active");
 
@@ -131,6 +142,7 @@ public partial class MainAppWindow : Window
             case "Portfolio": NavPortfolio.Classes.Add("active"); break;
             case "Market": NavMarket.Classes.Add("active"); break;
             case "Transactions": NavTransactions.Classes.Add("active"); break;
+            case "DCA": NavDCA.Classes.Add("active"); break;
             case "Settings": NavSettings.Classes.Add("active"); break;
             case "Admin": NavAdmin.Classes.Add("active"); break;
         }

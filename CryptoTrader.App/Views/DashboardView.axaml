@@ -6,6 +6,7 @@
 
     <UserControl.Resources>
         <vm:CurrencyConverter x:Key="CurrencyConverter"/>
+        <vm:BoolToColorConverter x:Key="BoolToColorConverter"/>
     </UserControl.Resources>
 
     <UserControl.Styles>
@@ -61,7 +62,26 @@
 
         <ScrollViewer Padding="30">
             <StackPanel>
-                <TextBlock Text="{Binding L[NavDashboard]}" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
+                <Grid Margin="0,0,0,20">
+                    <TextBlock Text="{Binding L[NavDashboard]}" FontSize="28" FontWeight="Bold"/>
+                    <!-- Real-time connection status -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="10">
+                        <Border CornerRadius="5" Padding="10,5" Background="#2d2d4a">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Ellipse Width="10" Height="10" VerticalAlignment="Center"
+                                         Fill="{Binding IsRealTimeConnected, Converter={StaticResource BoolToColorConverter}}"/>
+                                <TextBlock Text="TCP/UDP" FontSize="12" Foreground="#808090"/>
+                                <TextBlock Text="{Binding RealTimeStatus}" FontSize="12" Foreground="White"/>
+                            </StackPanel>
+                        </Border>
+                        <Border CornerRadius="5" Padding="10,5" Background="#2d2d4a">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <TextBlock Text="🕐" FontSize="12"/>
+                                <TextBlock Text="{Binding LastUpdateTime}" FontSize="12" Foreground="#00b894"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
                 
                 <WrapPanel Margin="0,0,0,30">
                     <Border Background="#2d2d4a" CornerRadius="10" Padding="25" Margin="0,0,15,15" Width="280">

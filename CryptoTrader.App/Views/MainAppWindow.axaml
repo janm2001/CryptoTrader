@@ -91,6 +91,12 @@
                             <TextBlock Text="{Binding L[NavTransactions]}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
+                    <Button Classes="nav" x:Name="NavDCA" Click="NavigateToDCA">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📅" FontSize="18" Margin="0,0,10,0"/>
+                            <TextBlock Text="{Binding L[NavDCA]}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
                     <Button Classes="nav" x:Name="NavSettings" Click="NavigateToSettings">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="⚙️" FontSize="18" Margin="0,0,10,0"/>
