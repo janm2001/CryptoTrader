@@ -24,10 +24,11 @@ public class CryptoApiService
     private DateTime _callCountResetTime = DateTime.UtcNow;
     private const int MaxCallsPerMinute = 30; // Demo API has lower limits
 
-    public CryptoApiService(DatabaseContext db, string baseUrl = "https://api.coingecko.com/api/v3", string? apiKey = null)
+    public CryptoApiService(DatabaseContext db, string baseUrl = "https://api.coingecko.com/api/v3/", string? apiKey = null)
     {
         _db = db;
-        _baseUrl = baseUrl;
+        // Ensure base URL ends with / for proper relative path resolution
+        _baseUrl = baseUrl.EndsWith("/") ? baseUrl : baseUrl + "/";
         _apiKey = apiKey;
         _httpClient = new HttpClient
         {
@@ -41,7 +42,7 @@ public class CryptoApiService
         if (!string.IsNullOrEmpty(_apiKey))
         {
             _httpClient.DefaultRequestHeaders.Add("x-cg-demo-api-key", _apiKey);
-            Console.WriteLine("[CryptoAPI] Using CoinGecko Demo API key");
+            Console.WriteLine($"[CryptoAPI] Using CoinGecko Demo API key: {_apiKey[..Math.Min(10, _apiKey.Length)]}...");
         }
         else
         {
@@ -116,8 +117,9 @@ public class CryptoApiService
             // Apply rate limiting before API call
             await ApplyRateLimitAsync();
             
-            var url = $"/coins/markets?vs_currency={currency}&order=market_cap_desc&per_page={count}&page=1&sparkline=false";
-            Console.WriteLine($"[CryptoAPI] Fetching prices from: {_baseUrl}{url}");
+            // Note: URL must NOT start with / when using BaseAddress, otherwise it ignores the base path
+            var url = $"coins/markets?vs_currency={currency}&order=market_cap_desc&per_page={count}&page=1&sparkline=false";
+            Console.WriteLine($"[CryptoAPI] Fetching prices from: {_httpClient.BaseAddress}{url}");
             
             var response = await _httpClient.GetAsync(url);
             
@@ -368,7 +370,8 @@ public class CryptoApiService
             // Apply rate limiting before API call
             await ApplyRateLimitAsync();
             
-            var response = await _httpClient.GetAsync("/simple/supported_vs_currencies");
+            // Note: URL must NOT start with / when using BaseAddress
+            var response = await _httpClient.GetAsync("simple/supported_vs_currencies");
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<List<string>>() ?? new List<string>();
         }

@@ -37,15 +37,22 @@ public class ServerConfig
     private void LoadFromFile()
     {
         var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "server.ini");
+        Console.WriteLine($"[Config] Looking for config at: {configPath}");
+        
         if (!File.Exists(configPath))
         {
             // Also check current directory
             configPath = "server.ini";
+            Console.WriteLine($"[Config] Not found, trying: {Path.GetFullPath(configPath)}");
         }
         
         if (!File.Exists(configPath))
+        {
+            Console.WriteLine("[Config] No server.ini found");
             return;
+        }
 
+        Console.WriteLine($"[Config] Loading from: {Path.GetFullPath(configPath)}");
         var ini = new IniFile(configPath);
         
         TcpPort = ini.GetInt("Server", "TcpPort", TcpPort);
@@ -58,6 +65,8 @@ public class ServerConfig
         MaxConnections = ini.GetInt("Server", "MaxConnections", MaxConnections);
         TokenExpirationHours = ini.GetInt("Auth", "TokenExpirationHours", TokenExpirationHours);
         SessionTimeoutMinutes = ini.GetInt("Auth", "SessionTimeoutMinutes", SessionTimeoutMinutes);
+        
+        Console.WriteLine($"[Config] CoinGeckoApiKey loaded: {(string.IsNullOrEmpty(CoinGeckoApiKey) ? "NO" : "YES (" + CoinGeckoApiKey[..Math.Min(10, CoinGeckoApiKey.Length)] + "...)")}");
     }
 
     private void LoadFromEnvironment()
