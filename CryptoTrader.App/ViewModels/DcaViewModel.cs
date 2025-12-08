@@ -25,6 +25,9 @@ public class DcaViewModel : ViewModelBase
         _nav = NavigationService.Instance;
         _currency = CurrencyService.Instance;
 
+        // Set current user for DCA storage (user-specific plans)
+        _dcaStorage.CurrentUserId = _nav.CurrentUsername;
+
         // Use shared auth token
         var token = _nav.AuthToken;
         if (!string.IsNullOrEmpty(token))

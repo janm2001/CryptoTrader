@@ -15,6 +15,10 @@ public class DcaPlan
     [JsonPropertyName("id")]
     public string Id { get; set; } = Guid.NewGuid().ToString();
 
+    [XmlElement("UserId")]
+    [JsonPropertyName("userId")]
+    public string UserId { get; set; } = "";
+
     [XmlElement("Name")]
     [JsonPropertyName("name")]
     public string Name { get; set; } = "";

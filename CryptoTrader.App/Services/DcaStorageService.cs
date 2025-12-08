@@ -19,14 +19,31 @@ public class DcaStorageService
     public static DcaStorageService Instance => _instance ??= new DcaStorageService();
 
     private readonly string _dataFolder;
-    private readonly string _xmlFilePath;
-    private readonly string _jsonFilePath;
+    private string _xmlFilePath;
+    private string _jsonFilePath;
+    private string _currentUserId = "";
     private DcaPlanCollection _plans;
 
     public event EventHandler<DcaPlan>? OnPlanAdded;
     public event EventHandler<DcaPlan>? OnPlanUpdated;
     public event EventHandler<string>? OnPlanDeleted;
     public event EventHandler? OnPlansChanged;
+
+    /// <summary>
+    /// Current user ID for filtering plans
+    /// </summary>
+    public string CurrentUserId
+    {
+        get => _currentUserId;
+        set
+        {
+            if (_currentUserId != value)
+            {
+                _currentUserId = value;
+                UpdateFilePaths();
+            }
+        }
+    }
 
     private DcaStorageService()
     {
@@ -37,6 +54,35 @@ public class DcaStorageService
         _jsonFilePath = Path.Combine(_dataFolder, "dca_plans.json");
 
         _plans = new DcaPlanCollection();
+    }
+
+    /// <summary>
+    /// Update file paths based on current user
+    /// </summary>
+    private void UpdateFilePaths()
+    {
+        if (!string.IsNullOrEmpty(_currentUserId))
+        {
+            // Create user-specific folder
+            var userFolder = Path.Combine(_dataFolder, SanitizeFileName(_currentUserId));
+            Directory.CreateDirectory(userFolder);
+            _xmlFilePath = Path.Combine(userFolder, "dca_plans.xml");
+            _jsonFilePath = Path.Combine(userFolder, "dca_plans.json");
+        }
+        else
+        {
+            _xmlFilePath = Path.Combine(_dataFolder, "dca_plans.xml");
+            _jsonFilePath = Path.Combine(_dataFolder, "dca_plans.json");
+        }
+    }
+
+    /// <summary>
+    /// Sanitize username for use as folder name
+    /// </summary>
+    private static string SanitizeFileName(string name)
+    {
+        var invalid = Path.GetInvalidFileNameChars();
+        return string.Join("_", name.Split(invalid, StringSplitOptions.RemoveEmptyEntries));
     }
 
     #region Load/Save Operations
@@ -135,32 +181,36 @@ public class DcaStorageService
     #region CRUD Operations
 
     /// <summary>
-    /// Get all DCA plans
+    /// Get all DCA plans for the current user
     /// </summary>
-    public IReadOnlyList<DcaPlan> GetAllPlans() => _plans.Plans.AsReadOnly();
+    public IReadOnlyList<DcaPlan> GetAllPlans() => 
+        _plans.Plans.Where(p => string.IsNullOrEmpty(p.UserId) || p.UserId == _currentUserId).ToList().AsReadOnly();
 
     /// <summary>
-    /// Get active DCA plans
+    /// Get active DCA plans for the current user
     /// </summary>
-    public IReadOnlyList<DcaPlan> GetActivePlans() => _plans.Plans.Where(p => p.IsActive).ToList().AsReadOnly();
+    public IReadOnlyList<DcaPlan> GetActivePlans() => 
+        _plans.Plans.Where(p => p.IsActive && (string.IsNullOrEmpty(p.UserId) || p.UserId == _currentUserId)).ToList().AsReadOnly();
 
     /// <summary>
-    /// Get a specific plan by ID
+    /// Get a specific plan by ID (only if owned by current user)
     /// </summary>
-    public DcaPlan? GetPlanById(string id) => _plans.Plans.FirstOrDefault(p => p.Id == id);
+    public DcaPlan? GetPlanById(string id) => 
+        _plans.Plans.FirstOrDefault(p => p.Id == id && (string.IsNullOrEmpty(p.UserId) || p.UserId == _currentUserId));
 
     /// <summary>
-    /// Get plans for a specific coin
+    /// Get plans for a specific coin (for current user)
     /// </summary>
     public IReadOnlyList<DcaPlan> GetPlansByCoin(string coinId) => 
-        _plans.Plans.Where(p => p.CoinId == coinId).ToList().AsReadOnly();
+        _plans.Plans.Where(p => p.CoinId == coinId && (string.IsNullOrEmpty(p.UserId) || p.UserId == _currentUserId)).ToList().AsReadOnly();
 
     /// <summary>
-    /// Create a new DCA plan
+    /// Create a new DCA plan for the current user
     /// </summary>
     public async Task<DcaPlan> CreatePlanAsync(DcaPlan plan)
     {
         plan.Id = Guid.NewGuid().ToString();
+        plan.UserId = _currentUserId; // Assign to current user
         plan.CreatedAt = DateTime.UtcNow;
         plan.CalculateNextExecution();
 
@@ -359,17 +409,18 @@ public class DcaStorageService
     #region Statistics
 
     /// <summary>
-    /// Get summary statistics for all plans
+    /// Get summary statistics for current user's plans
     /// </summary>
     public DcaSummary GetSummary()
     {
+        var userPlans = _plans.Plans.Where(p => string.IsNullOrEmpty(p.UserId) || p.UserId == _currentUserId).ToList();
         return new DcaSummary
         {
-            TotalPlans = _plans.Plans.Count,
-            ActivePlans = _plans.Plans.Count(p => p.IsActive),
-            TotalInvested = _plans.Plans.Sum(p => p.TotalInvested),
-            TotalExecutions = _plans.Plans.Sum(p => p.ExecutionCount),
-            UniqueCoinCount = _plans.Plans.Select(p => p.CoinId).Distinct().Count()
+            TotalPlans = userPlans.Count,
+            ActivePlans = userPlans.Count(p => p.IsActive),
+            TotalInvested = userPlans.Sum(p => p.TotalInvested),
+            TotalExecutions = userPlans.Sum(p => p.ExecutionCount),
+            UniqueCoinCount = userPlans.Select(p => p.CoinId).Distinct().Count()
         };
     }
 
